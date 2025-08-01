@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import "../styles/bootstrap-custom.css"
 import "../styles/dashboard.css"
+import { Providers } from "@/app/providers"
 
 export const metadata: Metadata = {
   title: "OCP Sport - Dashboard",

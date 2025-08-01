@@ -1,6 +1,23 @@
 "use client"
 import { useState } from "react"
-import { Search, Filter, Download, Plus, Eye, Edit, Trash2, Users, Mail, Phone, Shield, Crown, Settings, BookOpen, Save, X } from 'lucide-react'
+import {
+  Search,
+  Filter,
+  Download,
+  Plus,
+  Eye,
+  Edit,
+  Trash2,
+  Users,
+  Mail,
+  Phone,
+  Shield,
+  Crown,
+  Settings,
+  BookOpen,
+  Save,
+  X,
+} from "lucide-react"
 
 const usersData = [
   {
@@ -55,7 +72,7 @@ const usersData = [
     email: "youssef.idrissi@ocp.ma",
     telephone: "+212 6 56 78 90 12",
     dateInscription: "2023-05-12",
-    role: "admin", // Changé de "chef" à "admin"
+    role: "admin",
     derniereConnexion: "2024-01-15",
   },
   {
@@ -456,7 +473,6 @@ export function UsersManagement() {
                     <div className="mb-3">
                       <strong>Rôle:</strong> {getRoleBadge(selectedUser.role)}
                     </div>
-
                     <h6 className="mt-4">Permissions</h6>
                     <div className="permissions-list">
                       {selectedUser.role === "admin" && (
@@ -611,7 +627,7 @@ export function UsersManagement() {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  <Settings className="me-2" size={20} />
+                  <Settings className="ms-2" size={20} />
                   Changer le rôle - {selectedUser.nom}
                 </h5>
                 <button type="button" className="btn-close" onClick={() => setShowRoleModal(false)}></button>
@@ -620,7 +636,6 @@ export function UsersManagement() {
                 <div className="alert alert-info">
                   <strong>Rôle actuel:</strong> {getRoleBadge(selectedUser.role)}
                 </div>
-
                 <div className="mb-3">
                   <label className="form-label">Nouveau rôle</label>
                   <select className="form-select" value={newRole} onChange={(e) => setNewRole(e.target.value)}>
@@ -629,7 +644,6 @@ export function UsersManagement() {
                     <option value="admin">Chef/Administrateur - Gestion complète + utilisateurs et droits</option>
                   </select>
                 </div>
-
                 <div className="permissions-preview">
                   <h6>Permissions du nouveau rôle:</h6>
                   <div className="permissions-list">
@@ -799,8 +813,8 @@ export function UsersManagement() {
 
       <style jsx>{`
         .users-management-page {
-          padding: 20px;
-          background-color: #f8f9fa;
+          padding: 24px;
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
           min-height: 100vh;
         }
 
@@ -809,53 +823,115 @@ export function UsersManagement() {
           justify-content: space-between;
           align-items: center;
           margin-bottom: 30px;
-          padding: 20px;
+          padding: 24px;
           background: white;
-          border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+          box-shadow: 0 4px 20px rgba(22, 163, 74, 0.08);
+          border: 1px solid #bbf7d0;
         }
 
         .page-title {
           display: flex;
           align-items: center;
-          font-size: 28px;
+          font-size: 24px;
           font-weight: 700;
-          color: #2c3e50;
+          color: #16a34a;
           margin: 0;
         }
 
         .title-icon {
           margin-right: 12px;
-          color: #3498db;
+          color: #16a34a;
         }
 
         .page-subtitle {
-          color: #7f8c8d;
+          color: #6b7280;
           margin: 5px 0 0 0;
           font-size: 14px;
+        }
+
+        .header-actions {
+          display: flex;
+          gap: 12px;
+        }
+
+        .btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 14px;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+          background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+          color: white;
+          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+        }
+
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+        }
+
+        .btn-outline-secondary {
+          background: #f0fdf4;
+          color: #16a34a;
+          border: 1px solid #bbf7d0;
+        }
+
+        .btn-outline-secondary:hover {
+          background: #dcfce7;
+          border-color: #86efac;
+        }
+
+        .btn-success {
+          background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+          color: white;
+        }
+
+        .btn-secondary {
+          background: #f3f4f6;
+          color: #374151;
+        }
+
+        .btn-secondary:hover {
+          background: #e5e7eb;
         }
 
         .stats-cards-row {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 20px;
-          margin-bottom: 30px;
+          gap: 16px;
+          margin-bottom: 24px;
         }
 
         .stat-card-mini {
           background: white;
-          padding: 20px;
+          padding: 16px;
           border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08);
+          border: 1px solid #bbf7d0;
           display: flex;
           align-items: center;
-          gap: 15px;
+          gap: 12px;
+          transition: all 0.3s ease;
+        }
+
+        .stat-card-mini:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(22, 163, 74, 0.15);
         }
 
         .stat-icon-mini {
-          width: 50px;
-          height: 50px;
-          border-radius: 10px;
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -863,37 +939,37 @@ export function UsersManagement() {
         }
 
         .stat-icon-mini.users {
-          background: linear-gradient(135deg, #3498db, #2980b9);
+          background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
         }
+
         .stat-icon-mini.admin {
-          background: linear-gradient(135deg, #f39c12, #e67e22);
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         }
-        .stat-icon-mini.chef {
-          background: linear-gradient(135deg, #2980b9, #1f4e79);
-        }
+
         .stat-icon-mini.gestionnaire {
-          background: linear-gradient(135deg, #9b59b6, #8e44ad);
+          background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
         }
 
         .stat-value-mini {
-          font-size: 24px;
+          font-size: 20px;
           font-weight: 700;
-          color: #2c3e50;
+          color: #16a34a;
+          margin-bottom: 2px;
         }
 
         .stat-label-mini {
           font-size: 12px;
-          color: #7f8c8d;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+          color: #6b7280;
+          font-weight: 500;
         }
 
         .filters-section {
           background: white;
           padding: 20px;
           border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-          margin-bottom: 30px;
+          box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08);
+          border: 1px solid #bbf7d0;
+          margin-bottom: 24px;
           display: flex;
           gap: 20px;
           align-items: center;
@@ -909,61 +985,85 @@ export function UsersManagement() {
           left: 12px;
           top: 50%;
           transform: translateY(-50%);
-          color: #7f8c8d;
+          color: #9ca3af;
         }
 
         .search-input {
           width: 100%;
-          padding: 12px 12px 12px 45px;
-          border: 2px solid #ecf0f1;
+          padding: 12px 12px 12px 40px;
+          border: 1px solid #d1d5db;
           border-radius: 8px;
           font-size: 14px;
-          transition: border-color 0.3s;
+          background: #f9fafb;
+          transition: all 0.3s ease;
         }
 
         .search-input:focus {
           outline: none;
-          border-color: #3498db;
+          border-color: #16a34a;
+          background: white;
+          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        .filter-controls {
+          display: flex;
+          gap: 12px;
+          align-items: center;
         }
 
         .filter-select {
-          padding: 12px 16px;
-          border: 2px solid #ecf0f1;
+          padding: 10px 12px;
+          border: 1px solid #d1d5db;
           border-radius: 8px;
           background: white;
+          font-size: 14px;
+          color: #374151;
           min-width: 150px;
+        }
+
+        .filter-select:focus {
+          outline: none;
+          border-color: #16a34a;
+          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
         }
 
         .table-container-enhanced {
           background: white;
           border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08);
+          border: 1px solid #bbf7d0;
           overflow: hidden;
-          margin-bottom: 30px;
+          margin-bottom: 24px;
         }
 
         .table-enhanced {
           width: 100%;
           margin: 0;
+          border-collapse: collapse;
         }
 
         .table-enhanced th {
-          background: #f8f9fa;
-          padding: 16px;
+          background: #f9fafb;
+          padding: 16px 20px;
           font-weight: 600;
-          color: #2c3e50;
+          color: #374151;
           border: none;
-          font-size: 14px;
+          font-size: 13px;
+          text-align: left;
         }
 
         .table-enhanced td {
-          padding: 16px;
-          border-top: 1px solid #ecf0f1;
+          padding: 16px 20px;
+          border-top: 1px solid #f3f4f6;
           vertical-align: middle;
         }
 
+        .table-row-enhanced {
+          transition: all 0.3s ease;
+        }
+
         .table-row-enhanced:hover {
-          background-color: #f8f9fa;
+          background-color: #f9fafb;
         }
 
         .user-cell-enhanced {
@@ -975,25 +1075,26 @@ export function UsersManagement() {
         .user-avatar-enhanced {
           width: 40px;
           height: 40px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #3498db, #2980b9);
+          border-radius: 10px;
+          background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
           display: flex;
           align-items: center;
           justify-content: center;
           color: white;
-          font-weight: 600;
+          font-weight: 700;
           font-size: 14px;
         }
 
         .user-name-enhanced {
           font-weight: 600;
-          color: #2c3e50;
+          color: #1f2937;
           margin-bottom: 2px;
+          font-size: 14px;
         }
 
         .user-details-enhanced {
           font-size: 12px;
-          color: #7f8c8d;
+          color: #6b7280;
         }
 
         .contact-cell {
@@ -1005,7 +1106,7 @@ export function UsersManagement() {
           align-items: center;
           gap: 6px;
           margin-bottom: 4px;
-          color: #2c3e50;
+          color: #374151;
         }
 
         .role-cell {
@@ -1026,106 +1127,294 @@ export function UsersManagement() {
         }
 
         .role-badge.role-admin {
-          background: #fef9e7;
-          color: #f39c12;
-        }
-
-        .role-badge.role-chef {
-          background: #e8f4fd;
-          color: #2980b9;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          color: #92400e;
         }
 
         .role-badge.role-gestionnaire {
-          background: #f4e8fd;
-          color: #8e44ad;
+          background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+          color: #7c3aed;
         }
 
         .role-badge.role-consulteur {
-          background: #e8f8f5;
-          color: #27ae60;
+          background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+          color: #166534;
+        }
+
+        .btn-outline-primary {
+          background: #f0f9ff;
+          color: #0369a1;
+          border: 1px solid #bae6fd;
+          font-size: 12px;
+          padding: 4px 8px;
+        }
+
+        .btn-outline-primary:hover {
+          background: #0369a1;
+          color: white;
         }
 
         .date-cell {
           text-align: center;
           font-size: 13px;
-          color: #2c3e50;
+          color: #374151;
         }
 
         .actions-cell-enhanced {
           display: flex;
-          gap: 8px;
+          gap: 6px;
           justify-content: center;
         }
 
         .action-btn-enhanced {
-          width: 36px;
-          height: 36px;
+          width: 32px;
+          height: 32px;
           border: none;
-          border-radius: 8px;
+          border-radius: 6px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: all 0.3s;
+          transition: all 0.3s ease;
         }
 
         .action-btn-enhanced.view {
-          background: #e8f4fd;
-          color: #2980b9;
+          background: #e0f2fe;
+          color: #0369a1;
         }
 
         .action-btn-enhanced.view:hover {
-          background: #2980b9;
+          background: #0369a1;
           color: white;
+          transform: scale(1.1);
         }
 
         .action-btn-enhanced.edit {
-          background: #fef9e7;
-          color: #f39c12;
+          background: #fef3c7;
+          color: #d97706;
         }
 
         .action-btn-enhanced.edit:hover {
-          background: #f39c12;
+          background: #d97706;
           color: white;
+          transform: scale(1.1);
         }
 
         .action-btn-enhanced.delete {
-          background: #fadbd8;
-          color: #e74c3c;
+          background: #fecaca;
+          color: #dc2626;
         }
 
         .action-btn-enhanced.delete:hover {
-          background: #e74c3c;
+          background: #dc2626;
           color: white;
+          transform: scale(1.1);
         }
 
         .pagination-section {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 20px;
+          padding: 20px 24px;
           background: white;
           border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08);
+          border: 1px solid #bbf7d0;
         }
 
         .pagination-info {
-          color: #7f8c8d;
+          color: #6b7280;
           font-size: 14px;
+          font-weight: 500;
         }
 
         .pagination-controls {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
         }
 
         .pagination-current {
           padding: 8px 12px;
-          background: #3498db;
+          background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
           color: white;
           border-radius: 6px;
           font-weight: 600;
+        }
+
+        .btn-sm {
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+
+        /* Modal Styles */
+        .modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 1050;
+        }
+
+        .modal-dialog {
+          position: relative;
+          width: auto;
+          margin: 1.75rem auto;
+          max-width: 500px;
+        }
+
+        .modal-lg {
+          max-width: 800px;
+        }
+
+        .modal-content {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+          overflow: hidden;
+        }
+
+        .modal-header {
+          padding: 20px 24px;
+          border-bottom: 1px solid #e5e7eb;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .modal-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #1f2937;
+          margin: 0;
+          display: flex;
+          align-items: center;
+        }
+
+        .modal-body {
+          padding: 24px;
+        }
+
+        .modal-footer {
+          padding: 20px 24px;
+          border-top: 1px solid #e5e7eb;
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+        }
+
+        .btn-close {
+          width: 32px;
+          height: 32px;
+          border: none;
+          background: #f3f4f6;
+          border-radius: 6px;
+          cursor: pointer;
+          position: relative;
+        }
+
+        .btn-close::before,
+        .btn-close::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 16px;
+          height: 2px;
+          background: #6b7280;
+          transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .btn-close::after {
+          transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .btn-close:hover {
+          background: #e5e7eb;
+        }
+
+        .form-label {
+          font-weight: 600;
+          color: #374151;
+          font-size: 13px;
+          margin-bottom: 6px;
+          display: block;
+        }
+
+        .form-control,
+        .form-select {
+          width: 100%;
+          padding: 10px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          font-size: 14px;
+          background: white;
+          transition: all 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+          outline: none;
+          border-color: #16a34a;
+          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        .mb-3 {
+          margin-bottom: 1rem;
+        }
+
+        .me-1 {
+          margin-right: 0.25rem;
+        }
+
+        .me-2 {
+          margin-right: 0.5rem;
+        }
+
+        .mt-1 {
+          margin-top: 0.25rem;
+        }
+
+        .mt-4 {
+          margin-top: 1.5rem;
+        }
+
+        .row {
+          display: flex;
+          flex-wrap: wrap;
+          margin: 0 -0.75rem;
+        }
+
+        .col-md-6 {
+          flex: 0 0 50%;
+          max-width: 50%;
+          padding: 0 0.75rem;
+        }
+
+        .table {
+          width: 100%;
+          margin-bottom: 1rem;
+          color: #212529;
+          border-collapse: collapse;
+        }
+
+        .table-sm td {
+          padding: 0.5rem;
+          border-top: 1px solid #dee2e6;
+        }
+
+        .alert {
+          padding: 12px 16px;
+          margin-bottom: 1rem;
+          border: 1px solid transparent;
+          border-radius: 8px;
+        }
+
+        .alert-info {
+          color: #0c5460;
+          background-color: #d1ecf1;
+          border-color: #bee5eb;
         }
 
         .permissions-list {
@@ -1137,14 +1426,78 @@ export function UsersManagement() {
           align-items: center;
           padding: 8px 0;
           font-size: 13px;
-          color: #2c3e50;
+          color: #374151;
         }
 
         .permissions-preview {
           margin-top: 20px;
           padding: 15px;
-          background: #f8f9fa;
+          background: #f9fafb;
           border-radius: 8px;
+        }
+
+        .text-warning {
+          color: #f59e0b !important;
+        }
+
+        .text-primary {
+          color: #3b82f6 !important;
+        }
+
+        .text-success {
+          color: #10b981 !important;
+        }
+
+        .text-info {
+          color: #06b6d4 !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .users-management-page {
+            padding: 16px;
+          }
+
+          .page-header-enhanced {
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+          }
+
+          .header-actions {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .stats-cards-row {
+            grid-template-columns: 1fr;
+          }
+
+          .filters-section {
+            flex-direction: column;
+            gap: 16px;
+          }
+
+          .filter-controls {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .pagination-section {
+            flex-direction: column;
+            gap: 16px;
+            text-align: center;
+          }
+
+          .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+          }
+
+          .modal-dialog {
+            margin: 1rem;
+            max-width: calc(100% - 2rem);
+          }
         }
       `}</style>
     </div>

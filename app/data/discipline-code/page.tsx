@@ -2,7 +2,7 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { DashboardHeader } from "@/components/dashboard-header"
-import  DisciplineCodesPage  from "@/components/DisciplineCodesPage"
+import { DisciplinesPage} from "@/components/DisciplineCodesPage"
 
 export default function UsersPage() {
   return (
@@ -14,7 +14,7 @@ export default function UsersPage() {
           <DashboardHeader />
 
           <section className="users-section">
-            <DisciplineCodesPage />
+            <DisciplinesPage />
           </section>
         </div>
       </main>

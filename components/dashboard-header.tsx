@@ -4,7 +4,7 @@ import { User, Bell, Settings } from "lucide-react"
 
 export function DashboardHeader() {
   return (
-    <header className="bg-white shadow-sm border-bottom">
+    <header className="bg-white shadow-sm border-bottom mb-4 p-3 rounded-3">
       <div className="container-fluid">
         <div className="row align-items-center py-2">
           {/* Left Section */}
@@ -14,13 +14,13 @@ export function DashboardHeader() {
                 <div
                   className="d-flex align-items-center justify-content-center rounded-circle"
                   style={{
-                    width: "40px",
-                    height: "40px",
+                    width: "50px",
+                    height: "50px",
                     backgroundColor: "#f8f9fa",
                     border: "2px solid #16a34a",
-                  }}
+                  }}   
                 >
-                  <span style={{ color: "#16a34a", fontWeight: "bold", fontSize: "14px" }}>OCP</span>
+                  <span style={{ color: "#16a34a", fontWeight: "bold", fontSize: "15px" }}>OCP</span>
                 </div>
               </div>
               <div>

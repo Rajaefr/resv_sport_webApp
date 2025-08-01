@@ -2,7 +2,7 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { DashboardHeader } from "@/components/dashboard-header"
-import  GroupesPage  from "@/components/GroupesPage"
+import  {GroupesPage}  from "@/components/GroupesPage"
 
 export default function UsersPage() {
   return (

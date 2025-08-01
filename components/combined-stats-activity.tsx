@@ -51,7 +51,7 @@ const statsData = [
 
 export function CombinedStatsActivity() {
   return (
-    <div className="bg-white rounded-3 shadow-sm p-3 mb-3">
+    <div className="bg-white rounded-3 shadow-sm p-4 mb-3">
       {/* Section Header - Plus compact */}
       <div className="d-flex justify-content-between align-items-center mb-2">
         <div>

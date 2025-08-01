@@ -61,7 +61,7 @@ const reservationsSport = [
     matricule: "33445A",
     email: "hassan.benjelloun@ocp.ma",
     salle: "C001-1",
-    activite: "Football",
+   
     date: "2024-01-15",
     heureDebut: "14:00",
     heureFin: "16:00",
@@ -200,12 +200,12 @@ export function RecentReservations() {
   const currentReservations = activeTab === "piscine" ? reservationsPiscine : reservationsSport
 
   return (
-    <div className="card border-0 shadow-sm bg-white">
+    <div className="card border-0 shadow-sm bg-white p-3">
       {/* Header avec onglets */}
       <div className="card-header bg-transparent border-0 pb-0">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <h6 className="card-title fw-bold mb-1" style={{ color: "#16a34a", fontSize: "1rem" }}>
+            <h6 className="card-title fw-bold mb-2" style={{ color: "#16a34a", fontSize: "1rem" }}>
               Réservations Récentes
             </h6>
             <p className="text-muted mb-0" style={{ fontSize: "0.8rem" }}>
@@ -213,17 +213,7 @@ export function RecentReservations() {
             </p>
           </div>
           <div className="d-flex gap-1">
-            <button
-              className="btn btn-sm d-flex align-items-center gap-1 border-0"
-              style={{
-                backgroundColor: "#f0fdf4",
-                color: "#16a34a",
-                fontSize: "0.75rem",
-              }}
-            >
-              <Filter size={14} />
-              <span className="d-none d-sm-inline">Filtrer</span>
-            </button>
+           
             <button
               className="btn btn-sm text-white border-0"
               style={{ backgroundColor: "#16a34a", fontSize: "0.75rem" }}
@@ -234,7 +224,7 @@ export function RecentReservations() {
         </div>
 
         {/* Onglets */}
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-2  p-2">
           <button
             className={`btn btn-sm d-flex align-items-center gap-2 border-0 ${
               activeTab === "piscine" ? "text-white" : ""
@@ -243,6 +233,8 @@ export function RecentReservations() {
               backgroundColor: activeTab === "piscine" ? "#16a34a" : "#f0fdf4",
               color: activeTab === "piscine" ? "white" : "#16a34a",
               fontSize: "0.8rem",
+              margin:"0.3rem",
+              padding:"0.35rem"
             }}
             onClick={() => setActiveTab("piscine")}
           >
@@ -257,6 +249,8 @@ export function RecentReservations() {
               backgroundColor: activeTab === "sport" ? "#16a34a" : "#f0fdf4",
               color: activeTab === "sport" ? "white" : "#16a34a",
               fontSize: "0.8rem",
+              margin:"0.3rem",
+              padding:"0.35rem"
             }}
             onClick={() => setActiveTab("sport")}
           >
@@ -267,8 +261,8 @@ export function RecentReservations() {
       </div>
 
       {/* Table */}
-      <div className="card-body p-0">
-        <div className="table-responsive">
+      <div className="card-body">
+        <div className="table-responsive  p-1">
           <table className="table table-hover mb-0">
             <thead style={{ backgroundColor: "#f9fafb" }}>
               <tr>
@@ -356,14 +350,12 @@ export function RecentReservations() {
                           </small>
                         </div>
                       ) : (
-                        <div>
-                          <div className="fw-medium" style={{ color: "#374151", fontSize: "0.8rem" }}>
+                        
+                          <div className="fw-medium" style={{ color: "#374151", fontSize: "0.8rem", textAlign:"center" }}>
                             {(reservation as any).salle}
                           </div>
-                          <small className="text-muted" style={{ fontSize: "0.7rem" }}>
-                            {(reservation as any).activite}
-                          </small>
-                        </div>
+                        
+              
                       )}
                     </td>
                     <td className="align-middle py-2 px-3">
@@ -434,6 +426,8 @@ export function RecentReservations() {
                     backgroundColor: "#f9fafb",
                     color: "#16a34a",
                     fontSize: "0.75rem",
+                    
+                  
                   }}
                 >
                   2
@@ -447,6 +441,7 @@ export function RecentReservations() {
                     backgroundColor: "#f9fafb",
                     color: "#16a34a",
                     fontSize: "0.75rem",
+                    
                   }}
                 >
                   Suivant
