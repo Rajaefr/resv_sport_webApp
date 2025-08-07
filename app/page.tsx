@@ -1,52 +1,30 @@
-"use client"
+'use client';
 
-import { AppSidebar } from "@/components/app-sidebar"
-import { RecentReservations } from "@/components/recent-reservations"
-import { SystemAlerts } from "@/components/system-alerts"
-import { QuickActions } from "@/components/quick-actions"
-import { DashboardHeader } from "@/components/dashboard-header"
-import { CombinedStatsActivity } from "@/components/combined-stats-activity"
-import "bootstrap-icons/font/bootstrap-icons.css"
-import "bootstrap/dist/css/bootstrap.min.css"
-import {StatsChart} from "@/components/stats-chart"
-export default function Dashboard() {
-  return (
-    <div className="dashboard-wrapper">
-      <AppSidebar />
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-      <main className="main-content main-content-scroll">
-        <div className="main-container">
-          {/* Enhanced Header */}
-          <DashboardHeader />
+export default function HomePage() {
+const router = useRouter();
 
-          {/* Quick Actions en haut avec scroll horizontal */}
-          <section className="actions-section-top">
-            <QuickActions />
-          </section>
+useEffect(() => {
+  // Vérifier si l'utilisateur est déjà connecté
+  const authToken = localStorage.getItem("authToken");
+  const user = localStorage.getItem("userInfo");
+  
+  if (authToken && user) {
+    // Rediriger vers le dashboard si connecté
+    router.push("/dashboard");
+  } else {
+    // Rediriger vers la page de bienvenue si non connecté
+    router.push("/welcome");
+  }
+}, [router]);
 
-          {/* Combined Stats and Activity */}
-          <section className="combined-section">
-            <CombinedStatsActivity />
-          </section>
-          <section className="stats-chart">
-            <StatsChart />
-          </section>
-
-          {/* Alertes */}
-          <section className="alerts-section">
-            <div className="row">
-              <div className="col-12">
-                <SystemAlerts />
-              </div>
-            </div>
-          </section>
-
-          {/* Recent Reservations */}
-          <section className="reservations-section">
-            <RecentReservations />
-          </section>
-        </div>
-      </main>
+return (
+  <div className="min-vh-100 d-flex align-items-center justify-content-center">
+    <div className="spinner-border text-success" role="status">
+      <span className="visually-hidden">Chargement...</span>
     </div>
-  )
+  </div>
+);
 }

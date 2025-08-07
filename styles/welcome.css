@@ -1,0 +1,179 @@
+/* Welcome.css - Bootstrap Version */
+
+.welcome-page {
+  background: linear-gradient(135deg, #10b981, #059669, #0d9488);
+  background-size: 200% 200%;
+  animation: bgMove 15s ease infinite;
+}
+
+/* Decorative circles */
+.decoration-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  filter: blur(40px);
+}
+
+.decoration-1 {
+  width: 320px;
+  height: 320px;
+  top: -160px;
+  right: -160px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.decoration-2 {
+  width: 400px;
+  height: 400px;
+  bottom: -200px;
+  left: -200px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.decoration-3 {
+  width: 150px;
+  height: 150px;
+  top: 50%;
+  left: 25%;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Brand elements */
+.brand-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+/* Feature cards */
+.feature-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Auth container */
+.auth-container {
+  max-width: 450px;
+  align-self: flex-start;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  min-height: auto;
+}
+
+/* Tab buttons */
+.tab-buttons {
+  background: rgba(243, 244, 246, 0.8);
+  border-radius: 16px;
+  padding: 6px;
+}
+
+.tab-buttons .btn {
+  border-radius: 12px;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.tab-buttons .btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.tab-buttons .btn-outline-success {
+  background: transparent;
+  color: #6b7280;
+  border: none;
+}
+
+.tab-buttons .btn-outline-success:hover {
+  background: rgba(255, 255, 255, 0.5);
+  color: #10b981;
+}
+
+/* Auth content transitions */
+.auth-content {
+  transition: all 0.5s ease-in-out;
+}
+
+/* Animation du fond */
+@keyframes bgMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .decoration-1,
+  .decoration-2,
+  .decoration-3 {
+    display: none;
+  }
+  
+  .auth-container {
+    max-width: 100%;
+  }
+  
+  .display-3 {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .feature-card {
+    padding: 12px !important;
+  }
+  
+  .auth-card {
+    border-radius: 16px !important;
+  }
+}
+
+/* Transition fade */
+.fade-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+.fade-exit {
+  opacity: 1;
+}
+.fade-exit-active {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 300ms, transform 300ms;
+}

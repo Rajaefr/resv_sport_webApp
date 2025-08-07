@@ -1,32 +1,35 @@
-import type React from "react"
-import type { Metadata } from "next"
-import "../styles/bootstrap-custom.css"
-import "../styles/dashboard.css"
+import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './globals.css';
 
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "OCP Sport - Dashboard",
-  description: "Système de gestion des réservations sportives",
-  viewport: "width=device-width, initial-scale=1",
-}
+  title: 'OCP Sport - Authentification',
+  description: 'Plateforme de gestion sportive OCP',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#28a745', // Using the success color from globals.css
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="fr">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-          rel="stylesheet"
+      <body className={inter.className}>
+        {children}
+        <script 
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+          async
         />
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" async></script>
-      </head>
-      <body className="antialiased">{children}</body>
+      </body>
     </html>
-  )
+  );
 }

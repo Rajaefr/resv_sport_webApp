@@ -1,6 +1,7 @@
 "use client"
 
 import { User, Bell, Settings } from "lucide-react"
+import { LogoutButton } from "./logout-button"
 
 export function DashboardHeader() {
   return (
@@ -100,6 +101,22 @@ export function DashboardHeader() {
                     </div>
                   </div>
                 </button>
+                <ul className="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <a className="dropdown-item" href="/settings">
+                      <Settings size={16} className="me-2" />
+                      Paramètres
+                    </a>
+                  </li>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li>
+                    <LogoutButton 
+                      variant="ghost" 
+                      size="sm" 
+                      className="dropdown-item w-100 text-start"
+                    />
+                  </li>
+                </ul>
               </div>
             </div>
           </div>

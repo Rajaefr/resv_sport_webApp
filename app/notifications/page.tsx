@@ -2,7 +2,7 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { DashboardHeader } from "@/components/dashboard-header"
-import { NotificationsPage} from "@/components/notifications"
+import { NotificationsPage } from "@/components/notifications"
 
 export default function UsersPage() {
   return (
