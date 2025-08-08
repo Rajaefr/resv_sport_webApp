@@ -1,23 +1,17 @@
 "use client"
 
-import { AppSidebar } from "@/components/app-sidebar"
-import { DashboardHeader } from "@/components/dashboard-header"
 import  ParametresPage from "@/components/parametres"
 
-export default function UsersPage() {
+export default function SettingsPage() {
   return (
-    <div className="dashboard-wrapper">
-      <AppSidebar />
-
-      <main className="main-content main-content-scroll">
-        <div className="main-container">
-          <DashboardHeader />
-
-          <section className="users-section">
+    <div className="row g-4">
+      <div className="col-12">
+        <div className="card h-100">
+          <div className="card-body">
             <ParametresPage />
-          </section>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }

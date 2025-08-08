@@ -46,7 +46,7 @@ export default function ForgotPasswordPage({ onBack }: ForgotPasswordFormProps) 
   };
 
   return (
-    <div className="p-0"> {/* Removed padding from here, handled by parent */}
+    <div className="p-0">
       <div className="text-center mb-4">
         <h2 className="h4 fw-bold text-dark mb-2">Récupération</h2>
         <p className="text-muted small">
@@ -55,14 +55,14 @@ export default function ForgotPasswordPage({ onBack }: ForgotPasswordFormProps) 
       </div>
 
       {error && (
-        <div className="alert alert-danger d-flex align-items-center py-2 mb-3" role="alert">
+        <div className="alert-ocp-danger d-flex align-items-center py-2 mb-3" role="alert">
           <AlertCircle size={16} className="text-danger me-2 flex-shrink-0" />
           <span className="small fw-medium">{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="alert alert-success d-flex align-items-center py-2 mb-3" role="alert">
+        <div className="alert-ocp-success d-flex align-items-center py-2 mb-3" role="alert">
           <CheckCircle size={16} className="text-success me-2 flex-shrink-0" />
           <span className="small fw-medium">{success}</span>
         </div>
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage({ onBack }: ForgotPasswordFormProps) 
           </label>
           <input
             type="email"
-            className="form-control form-control-lg"
+            className="form-control form-input-ocp"
             placeholder="votre.email@ocp.ma"
             value={email}
             onChange={(e) => handleInputChange(e.target.value)}
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage({ onBack }: ForgotPasswordFormProps) 
 
         <button
           type="submit"
-          className="btn btn-success w-100 py-3 d-flex align-items-center justify-content-center fw-bold rounded-pill mt-4"
+          className="btn-ocp-primary w-100 py-3 d-flex align-items-center justify-content-center fw-bold rounded-pill mt-4"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -109,7 +109,7 @@ export default function ForgotPasswordPage({ onBack }: ForgotPasswordFormProps) 
       <div className="d-flex align-items-center justify-content-center pt-3 mt-3 border-top">
         <button
           type="button"
-          className="btn btn-link text-success p-0 small fw-medium d-flex align-items-center"
+          className="btn-ocp-link p-0 small fw-medium d-flex align-items-center"
           onClick={onBack}
           disabled={isLoading}
         >

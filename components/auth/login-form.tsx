@@ -3,12 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, User, Building, AlertCircle, CheckCircle } from 'lucide-react';
+import type { LoginFormProps } from '@/lib/types';
 
-interface LoginFormProps {
-  onForgotPassword?: () => void;
-}
-
-export default function LoginForm({ onForgotPassword }: LoginFormProps) {
+export default function LoginForm({ onForgotPassword, onRegisterClick }: LoginFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
@@ -38,13 +35,12 @@ export default function LoginForm({ onForgotPassword }: LoginFormProps) {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Stocker le token et les infos utilisateur
+        document.cookie = `authToken=${data.token}; path=/; max-age=86400; samesite=Lax`;
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userInfo', JSON.stringify(data.user));
-        
+
         setSuccess("Connexion réussie ! Redirection...");
-        
-        // Redirection vers le dashboard
+
         setTimeout(() => {
           router.push('/dashboard');
         }, 1000);
@@ -65,128 +61,129 @@ export default function LoginForm({ onForgotPassword }: LoginFormProps) {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="row justify-content-center">
-        <div className="col-md-6 col-lg-4">
-          <div className="card shadow-sm">
-            <div className="card-body p-4">
-              <div className="text-center mb-4">
-                <h2 className="h4 fw-bold text-dark mb-2">Bienvenue</h2>
-                <p className="text-muted small">Connectez-vous à votre espace OCP Sport</p>
-              </div>
+    <div className="p-0">
+      <div className="welcome-auth-header">
+        <h2 className="welcome-auth-main-title">Bienvenue</h2>
+        <p className="welcome-auth-sub-title">Connectez-vous à votre espace OCP Sport</p>
+      </div>
 
-              {error && (
-                <div className="alert alert-danger d-flex align-items-center py-2 mb-3" role="alert">
-                  <AlertCircle size={16} className="text-danger me-2 flex-shrink-0" />
-                  <span className="small fw-medium">{error}</span>
-                </div>
-              )}
+      {error && (
+        <div className="alert-ocp-danger d-flex align-items-center py-2 mb-3" role="alert">
+          <AlertCircle size={16} className="text-danger me-2 flex-shrink-0" />
+          <span className="small fw-medium">{error}</span>
+        </div>
+      )}
 
-              {success && (
-                <div className="alert alert-success d-flex align-items-center py-2 mb-3" role="alert">
-                  <CheckCircle size={16} className="text-success me-2 flex-shrink-0" />
-                  <span className="small fw-medium">{success}</span>
-                </div>
-              )}
+      {success && (
+        <div className="alert-ocp-success d-flex align-items-center py-2 mb-3" role="alert">
+          <CheckCircle size={16} className="text-success me-2 flex-shrink-0" />
+          <span className="small fw-medium">{success}</span>
+        </div>
+      )}
 
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center text-dark fw-medium small">
-                    <Building size={16} className="me-2" />
-                    <span>Domaine</span>
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.domain}
-                    onChange={(e) => handleInputChange("domain", e.target.value)}
-                    disabled={isLoading}
-                  >
-                    <option value="ocp.ma">ocp.ma</option>
-                    <option value="ocpgroup.ma">ocpgroup.ma</option>
-                    <option value="test.ocp.ma">test.ocp.ma</option>
-                  </select>
-                </div>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group-custom">
+          <label htmlFor="domain" className="form-label-custom">
+            <Building size={16} className="me-2" />
+            <span>Domaine</span>
+          </label>
+          <select
+            id="domain"
+            className="form-select form-select-custom"
+            value={formData.domain}
+            onChange={(e) => handleInputChange("domain", e.target.value)}
+            disabled={isLoading}
+          >
+            <option value="ocp.ma">ocp.ma</option>
+            <option value="ocpgroup.ma">ocpgroup.ma</option>
+            <option value="test.ocp.ma">test.ocp.ma</option>
+          </select>
+        </div>
 
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center text-dark fw-medium small">
-                    <User size={16} className="me-2" />
-                    <span>Email</span>
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="votre.email@ocp.ma"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    disabled={isLoading}
-                    required
-                  />
-                </div>
+        <div className="form-group-custom">
+          <label htmlFor="email" className="form-label-custom">
+            <User size={16} className="me-2" />
+            <span>Email</span>
+          </label>
+          <input
+            id="email"
+            type="email"
+             autoComplete="off"
+            className="form-control form-input-custom"
+            placeholder="votre.email@ocp.ma"
+            value={formData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            disabled={isLoading}
+            required
+          />
+        </div>
 
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center text-dark fw-medium small">
-                    <Lock size={16} className="me-2" />
-                    <span>Mot de passe</span>
-                  </label>
-                  <div className="position-relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      className="form-control pe-5"
-                      placeholder="Votre mot de passe"
-                      value={formData.password}
-                      onChange={(e) => handleInputChange("password", e.target.value)}
-                      disabled={isLoading}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={isLoading}
-                      style={{ border: 'none', background: 'none', zIndex: 10 }}
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-success w-100 py-2 d-flex align-items-center justify-content-center"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="spinner-border spinner-border-sm me-2" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                      <span>Connexion...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Lock size={16} className="me-2" />
-                      <span>Se connecter</span>
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <div className="d-flex align-items-center justify-content-between pt-3 mt-3 border-top">
-                <button
-                  type="button"
-                  className="btn btn-link text-success p-0 small"
-                  onClick={onForgotPassword}
-                  disabled={isLoading}
-                >
-                  Mot de passe oublié ?
-                </button>
-                <small className="text-muted">
-                  Support IT disponible
-                </small>
-              </div>
-            </div>
+        <div className="form-group-custom">
+          <label htmlFor="password" className="form-label-custom">
+            <Lock size={16} className="me-2" />
+            <span>Mot de passe</span>
+          </label>
+          <div className="position-relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password" 
+              className="form-control form-input-custom password-toggle"
+              placeholder="Votre mot de passe"
+              value={formData.password}
+              onChange={(e) => handleInputChange("password", e.target.value)}
+              disabled={isLoading}
+              required
+            />
+            <button
+              type="button"
+              className="password-toggle-button"
+              onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </div>
         </div>
+
+        <button
+          type="submit"
+          className="btn-ocp-primary w-100 py-3 d-flex align-items-center justify-content-center fw-bold rounded-pill mt-4"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <div className="spinner-border spinner-border-sm me-2" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <span>Connexion...</span>
+            </>
+          ) : (
+            <>
+              <Lock size={16} className="me-2" />
+              <span>Se connecter</span>
+            </>
+          )}
+        </button>
+      </form>
+
+      <div className="d-flex align-items-center justify-content-between pt-3 mt-4 border-top border-gray-200">
+        <button
+          type="button"
+          className="btn-ocp-link p-0 small fw-medium"
+          onClick={onForgotPassword}
+          disabled={isLoading}
+        >
+          Mot de passe oublié ?
+        </button>
+        <button
+          type="button"
+          className="btn-ocp-link p-0 small fw-medium"
+          onClick={onRegisterClick}
+          disabled={isLoading}
+        >
+          Créer un compte
+        </button>
       </div>
     </div>
   );

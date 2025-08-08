@@ -1,24 +1,20 @@
-"use client"
+'use client';
 
-import { AppSidebar } from "@/components/app-sidebar"
-import { DashboardHeader } from "@/components/dashboard-header"
-import {ReservationsPiscine} from "@/components/reservations-piscine"
-
+import { ReservationsPiscine } from "@/components/reservations-piscine"
 
 export default function PiscinePage() {
   return (
-    <div className="dashboard-wrapper">
-      <AppSidebar />
-
-      <main className="main-content main-content-scroll">
-        <div className="main-container">
-          <DashboardHeader />
-
-          <section className="reservations-section">
+    <div className="row g-4">
+      <div className="col-12">
+        <div className="card h-100">
+          <div className="card-body">
             <ReservationsPiscine />
-          </section>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   )
+
+
+  
 }
