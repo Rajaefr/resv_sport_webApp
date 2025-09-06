@@ -4,6 +4,7 @@ import { RecentReservations } from "@/components/recent-reservations"
 import { SystemAlerts } from "@/components/system-alerts"
 import { QuickActions } from "@/components/quick-actions"
 import { CombinedStatsActivity } from "@/components/combined-stats-activity"
+import { PermissionGuard } from "@/components/auth/PermissionGuard"
 import "bootstrap-icons/font/bootstrap-icons.css"
 import {StatsChart} from "@/components/stats-chart"
 
@@ -23,23 +24,27 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Combined Stats and Activity */}
-      <div className="col-12">
-        <div className="card h-100">
-          <div className="card-body">
-            <CombinedStatsActivity />
+      {/* Combined Stats and Activity - Admin only */}
+      <PermissionGuard permission="canViewStatistics">
+        <div className="col-12">
+          <div className="card h-100">
+            <div className="card-body">
+              <CombinedStatsActivity />
+            </div>
           </div>
         </div>
-      </div>
+      </PermissionGuard>
 
-      {/* Stats Chart */}
-      <div className="col-12">
-        <div className="card h-100">
-          <div className="card-body">
-            <StatsChart />
+      {/* Stats Chart - Admin only */}
+      <PermissionGuard permission="canViewStatistics">
+        <div className="col-12">
+          <div className="card h-100">
+            <div className="card-body">
+              <StatsChart />
+            </div>
           </div>
         </div>
-      </div>
+      </PermissionGuard>
 
       {/* Alertes */}
       <div className="col-12">

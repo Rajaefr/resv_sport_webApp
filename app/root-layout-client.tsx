@@ -9,6 +9,7 @@ import { DashboardHeader } from '@/components/dashboard-header';
 import { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { useRouter, usePathname } from 'next/navigation';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -102,7 +103,7 @@ export default function RootLayoutClient({
   }
 
   return (
-    <>
+    <AuthProvider>
       {isPublicRoute ? (
         children
       ) : (
@@ -144,6 +145,6 @@ export default function RootLayoutClient({
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
         async
       />
-    </>
+    </AuthProvider>
   );
 }

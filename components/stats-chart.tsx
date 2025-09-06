@@ -1,51 +1,128 @@
 "use client"
 
-import { TrendingUp, Users, DollarSign, Calendar, BarChart3, Activity } from "lucide-react"
+import { TrendingUp, Users, DollarSign, Calendar, BarChart3, Activity, RefreshCw } from "lucide-react"
+import { useState, useEffect } from "react"
+import { apiService } from "../lib/apiService"
 
-const monthlyData = [
-  { month: "Jan", reservations: 245, revenue: 12500 },
-  { month: "Fév", reservations: 289, revenue: 14200 },
-  { month: "Mar", reservations: 312, revenue: 15800 },
-  { month: "Avr", reservations: 278, revenue: 13900 },
-  { month: "Mai", reservations: 334, revenue: 16700 },
-  { month: "Juin", reservations: 298, revenue: 14900 },
-]
+interface DashboardStats {
+  overview: {
+    totalReservations: number;
+    totalRevenue: number;
+    totalUsers: number;
+    totalActivities: number;
+    occupationRate: number;
+  };
+  monthlyStats: any[];
+  occupationStats: any[];
+}
 
-const occupationData = [
-  { time: "08:00", rate: 45 },
-  { time: "10:00", rate: 72 },
-  { time: "12:00", rate: 89 },
-  { time: "14:00", rate: 95 },
-  { time: "16:00", rate: 78 },
-  { time: "18:00", rate: 62 },
-  { time: "20:00", rate: 34 },
-]
+interface MonthlyData {
+  month: string;
+  reservations: number;
+  revenue: number;
+}
 
-// Données des revenus par code discipline (salles)
-const revenueByDiscipline = [
-  { code: "C001", discipline: "Tennis", revenue: 15600 },
-  { code: "C003", discipline: "Badminton", revenue: 1280 },
-  { code: "C007", discipline: "Squash", revenue: 920 },
-  { code: "C012", discipline: "Volleyball", revenue: 890 },
-  { code: "C015", discipline: "Basketball", revenue: 1140 },
-  { code: "C018", discipline: "Handball", revenue: 730 },
-]
+interface OccupationData {
+  hour: number;
+  reservations: number;
+  avg_participants: number;
+}
 
-// Données d'occupation par groupe
-const groupOccupationData = [
-  { group: "A1-1", occupation: 98, capacity: 25, current: 24 },
-  { group: "A1-2", occupation: 45, capacity: 20, current: 9 },
-  { group: "A2-1", occupation: 95, capacity: 30, current: 28,  },
-  { group: "B1-3", occupation: 96, capacity: 22, current: 21 },
-  { group: "B2-4", occupation: 99, capacity: 28, current: 27 },
-  { group: "A1-3", occupation: 78, capacity: 25, current: 19  },
-  { group: "B1-1", occupation: 89, capacity: 24, current: 21 },
-  { group: "A2-3", occupation: 75, capacity: 26, current: 19  },
-]
+interface RevenueByDiscipline {
+  code: string;
+  discipline: string;
+  revenue: number;
+  reservations_count: number;
+  unique_users: number;
+}
+
+interface OccupationRate {
+  activity_name: string;
+  discipline_code: string;
+  total_reservations: number;
+  avg_participants: number;
+  max_capacity: number;
+  occupation_rate: number;
+}
 
 export function StatsChart() {
-  const maxReservations = Math.max(...monthlyData.map((d) => d.reservations))
-  const maxRevenue = Math.max(...revenueByDiscipline.map((d) => d.revenue))
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [monthlyTrends, setMonthlyTrends] = useState<MonthlyData[]>([]);
+  const [revenueByDiscipline, setRevenueByDiscipline] = useState<RevenueByDiscipline[]>([]);
+  const [occupationRates, setOccupationRates] = useState<OccupationRate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [
+        dashboardResponse,
+        monthlyResponse,
+        revenueResponse,
+        occupationResponse
+      ] = await Promise.all([
+        apiService.getDashboardStats(),
+        apiService.getMonthlyTrends(),
+        apiService.getRevenueByDiscipline(),
+        apiService.getOccupationRates()
+      ]);
+
+      setStats(dashboardResponse.data);
+      setMonthlyTrends(monthlyResponse.data.monthlyTrends);
+      setRevenueByDiscipline(revenueResponse.data.revenueByDiscipline);
+      setOccupationRates(occupationResponse.data.occupationRates);
+      
+    } catch (err) {
+      console.error('Erreur lors du chargement des données:', err);
+      setError('Erreur lors du chargement des données');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-3 shadow-sm border p-4">
+        <div className="d-flex justify-content-center align-items-center" style={{ height: "400px" }}>
+          <div className="spinner-border text-success" role="status">
+            <span className="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="bg-white rounded-3 shadow-sm border p-4">
+        <div className="alert alert-danger" role="alert">
+          {error || 'Erreur lors du chargement des statistiques'}
+          <button 
+            className="btn btn-sm btn-outline-danger ms-2"
+            onClick={fetchAllData}
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const maxReservations = (monthlyTrends || []).length > 0 ? Math.max(...(monthlyTrends || []).map((d) => d.reservations)) : 1;
+  const maxRevenue = (revenueByDiscipline || []).length > 0 ? Math.max(...(revenueByDiscipline || []).map((d) => d.revenue)) : 1;
+
+  // Convertir les données d'occupation par heure pour le graphique
+  const occupationData = (stats.occupationStats || []).map((item: any) => ({
+    time: `${item.hour.toString().padStart(2, '0')}:00`,
+    rate: Math.round((item.avg_participants / 30) * 100) // Estimation basée sur capacité moyenne de 30
+  }));
 
   return (
     <div className="bg-white rounded-3 shadow-sm border p-4">
@@ -65,13 +142,23 @@ export function StatsChart() {
             <p className="mb-0 text-muted small">Vue d'ensemble des performances</p>
           </div>
         </div>
-        <button
-          className="btn btn-sm d-flex align-items-center gap-2"
-          style={{ backgroundColor: "#16a34a", color: "white", border: "none" }}
-        >
-          <Calendar size={14} />
-          Derniers 6 mois
-        </button>
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-sm d-flex align-items-center gap-2"
+            style={{ backgroundColor: "#16a34a", color: "white", border: "none" }}
+          >
+            <Calendar size={14} />
+            Derniers 6 mois
+          </button>
+          <button 
+            className="btn btn-light btn-sm border-0" 
+            style={{ backgroundColor: "#f9fafb" }}
+            onClick={fetchAllData}
+            disabled={loading}
+          >
+            <RefreshCw size={14} style={{ color: "#16a34a" }} />
+          </button>
+        </div>
       </div>
 
       {/* Cards statistiques */}
@@ -82,7 +169,7 @@ export function StatsChart() {
               <div>
                 <p className="mb-1 text-muted small">Total Réservations</p>
                 <h5 className="mb-0 fw-bold" style={{ color: "#16a34a" }}>
-                  1,756
+                  {(stats.overview?.totalReservations || 0).toLocaleString()}
                 </h5>
                 <small style={{ color: "#16a34a" }}>
                   <TrendingUp size={12} className="me-1" />
@@ -99,7 +186,7 @@ export function StatsChart() {
               <div>
                 <p className="mb-1 text-muted small">Revenus</p>
                 <h5 className="mb-0 fw-bold" style={{ color: "#16a34a" }}>
-                  87,900€
+                  {(stats.overview?.totalRevenue || 0).toLocaleString()}€
                 </h5>
                 <small style={{ color: "#16a34a" }}>
                   <TrendingUp size={12} className="me-1" />
@@ -116,7 +203,7 @@ export function StatsChart() {
               <div>
                 <p className="mb-1 text-muted small">Taux d'Occupation</p>
                 <h5 className="mb-0 fw-bold" style={{ color: "#16a34a" }}>
-                  73%
+                  {(stats.overview?.occupationRate || 0)}%
                 </h5>
                 <small style={{ color: "#16a34a" }}>
                   <TrendingUp size={12} className="me-1" />
@@ -131,9 +218,9 @@ export function StatsChart() {
           <div className="rounded-2 p-3 border" style={{ backgroundColor: "#f0fdf4" }}>
             <div className="d-flex align-items-center justify-content-between">
               <div>
-                <p className="mb-1 text-muted small">Groupes Actifs</p>
+                <p className="mb-1 text-muted small">Activités</p>
                 <h5 className="mb-0 fw-bold" style={{ color: "#16a34a" }}>
-                  16
+                  {stats.overview?.totalActivities || 0}
                 </h5>
                 <small style={{ color: "#16a34a" }}>
                   <TrendingUp size={12} className="me-1" />
@@ -155,7 +242,7 @@ export function StatsChart() {
               Réservations Mensuelles
             </h6>
             <div className="d-flex align-items-end gap-2" style={{ height: "200px" }}>
-              {monthlyData.map((data, index) => (
+              {(monthlyTrends || []).map((data: MonthlyData, index: number) => (
                 <div key={index} className="d-flex flex-column align-items-center flex-fill">
                   <div
                     className="rounded-top"
@@ -214,17 +301,17 @@ export function StatsChart() {
                   stroke="#16a34a"
                   strokeWidth="2"
                   points={
-                    occupationData.map((d, i) => `${40 + i * 35},${140 - d.rate * 1.1}`).join(" ") + ` 280,140 40,140`
+                    (occupationData || []).map((d, i) => `${40 + i * 35},${140 - d.rate * 1.1}`).join(" ") + ` 280,140 40,140`
                   }
                 />
                 <polyline
                   fill="none"
                   stroke="#16a34a"
                   strokeWidth="2"
-                  points={occupationData.map((d, i) => `${40 + i * 35},${140 - d.rate * 1.1}`).join(" ")}
+                  points={(occupationData || []).map((d, i) => `${40 + i * 35},${140 - d.rate * 1.1}`).join(" ")}
                 />
                 {/* Points de données */}
-                {occupationData.map((d, i) => (
+                {(occupationData || []).map((d, i) => (
                   <circle
                     key={i}
                     cx={40 + i * 35}
@@ -240,7 +327,7 @@ export function StatsChart() {
                   </circle>
                 ))}
                 {/* Labels des heures */}
-                {occupationData.map((d, i) => (
+                {(occupationData || []).map((d, i) => (
                   <text key={i} x={40 + i * 35} y="155" fontSize="10" fill="#6c757d" textAnchor="middle">
                     {d.time}
                   </text>
@@ -263,7 +350,7 @@ export function StatsChart() {
               <small className="text-muted">Salles sportives</small>
             </div>
             <div className="d-flex flex-column gap-2" style={{ maxHeight: "250px", overflowY: "auto" }}>
-              {revenueByDiscipline.map((item, index) => (
+              {(revenueByDiscipline || []).map((item: RevenueByDiscipline, index: number) => (
                 <div
                   key={index}
                   className="d-flex align-items-center justify-content-between p-3 rounded-2"
@@ -273,17 +360,19 @@ export function StatsChart() {
                     <span className="badge text-white fw-medium px-2 py-1" style={{ backgroundColor: "#16a34a" }}>
                       {item.code}
                     </span>
-                  
+                    <span className="fw-medium text-dark">
+                      {item.discipline}
+                    </span>
                   </div>
                   <div className="text-end">
                     <div className="fw-bold" style={{ color: "#16a34a" }}>
-                      {item.revenue.toLocaleString()}€
+                      {Number(item.revenue).toLocaleString()}€
                     </div>
                     <div className="progress mt-1" style={{ width: "80px", height: "4px" }}>
                       <div
                         className="progress-bar"
                         style={{
-                          width: `${(item.revenue / maxRevenue) * 100}%`,
+                          width: `${(Number(item.revenue) / maxRevenue) * 100}%`,
                           backgroundColor: "#16a34a",
                         }}
                       ></div>
@@ -305,38 +394,41 @@ export function StatsChart() {
               <small className="text-muted">Temps réel</small>
             </div>
             <div className="d-flex flex-column gap-2" style={{ maxHeight: "250px", overflowY: "auto" }}>
-              {groupOccupationData.map((group, index) => (
+              {(occupationRates || []).slice(0, 8).map((activity: OccupationRate, index: number) => (
                 <div key={index} className="p-3 rounded-2" style={{ backgroundColor: "#f8f9fa" }}>
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <div className="d-flex align-items-center gap-2">
-                      <span className="text-white badge text-white fw-medium px-2 py-1" style={{ backgroundColor: "#16a34a" }}>{group.group}</span>
-                      <span className="fw-medium text-dark">
-                        {group.current}/{group.capacity}
+                      <span className="badge text-white fw-medium px-2 py-1" style={{ backgroundColor: "#16a34a" }}>
+                        {activity.discipline_code}
                       </span>
-                    
+                      <span className="fw-medium text-dark">
+                        {Math.round(activity.avg_participants)}/{activity.max_capacity}
+                      </span>
                     </div>
                     <span
                       className={`fw-bold ${
-                        group.occupation >= 90 ? "text-danger" : group.occupation >= 70 ? "text-warning" : ""
+                        activity.occupation_rate >= 90 ? "text-danger" : activity.occupation_rate >= 70 ? "text-warning" : ""
                       }`}
-                      style={{ color: group.occupation < 70 ? "#16a34a" : undefined }}
+                      style={{ color: activity.occupation_rate < 70 ? "#16a34a" : undefined }}
                     >
-                      {group.occupation}%
+                      {Math.round(activity.occupation_rate)}%
                     </span>
                   </div>
                   <div className="progress" style={{ height: "6px" }}>
                     <div
                       className="progress-bar"
                       style={{
-                        width: `${group.occupation}%`,
+                        width: `${activity.occupation_rate}%`,
                         backgroundColor:
-                          group.occupation >= 90 ? "#f04848" : group.occupation >= 70 ? "#f7e14f" : "#16a318",
+                          activity.occupation_rate >= 90 ? "#f04848" : activity.occupation_rate >= 70 ? "#f7e14f" : "#16a318",
                       }}
                     ></div>
                   </div>
                   <div className="d-flex justify-content-between mt-1">
-                    <small className="text-muted">Participants actuels</small>
-                    <small style={{ color: "#16a34a" }}>{group.capacity - group.current} places libres</small>
+                    <small className="text-muted">{activity.activity_name}</small>
+                    <small style={{ color: "#16a34a" }}>
+                      {activity.max_capacity - Math.round(activity.avg_participants)} places libres
+                    </small>
                   </div>
                 </div>
               ))}

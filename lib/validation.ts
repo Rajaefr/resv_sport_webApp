@@ -33,9 +33,10 @@ export function validateRegister(data: any): ValidationResult {
     return { success: false, error: 'Email invalide' };
   }
   
-  if (!data.email.endsWith('@ocp.ma')) {
-    return { success: false, error: 'Seules les adresses email OCP sont autorisées' };
-  }
+  // Temporarily allow all email domains for development
+  // if (!data.email.endsWith('@ocp.ma')) {
+  //   return { success: false, error: 'Seules les adresses email OCP sont autorisées' };
+  // }
   
   // Removed username validation as it's no longer collected from the form
   // if (!data.username || data.username.length < 3) {

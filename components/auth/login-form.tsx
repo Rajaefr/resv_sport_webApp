@@ -9,8 +9,7 @@ export default function LoginForm({ onForgotPassword, onRegisterClick }: LoginFo
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
-    domain: "ocp.ma"
+    password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,23 +81,6 @@ export default function LoginForm({ onForgotPassword, onRegisterClick }: LoginFo
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="form-group-custom">
-          <label htmlFor="domain" className="form-label-custom">
-            <Building size={16} className="me-2" />
-            <span>Domaine</span>
-          </label>
-          <select
-            id="domain"
-            className="form-select form-select-custom"
-            value={formData.domain}
-            onChange={(e) => handleInputChange("domain", e.target.value)}
-            disabled={isLoading}
-          >
-            <option value="ocp.ma">ocp.ma</option>
-            <option value="ocpgroup.ma">ocpgroup.ma</option>
-            <option value="test.ocp.ma">test.ocp.ma</option>
-          </select>
-        </div>
 
         <div className="form-group-custom">
           <label htmlFor="email" className="form-label-custom">

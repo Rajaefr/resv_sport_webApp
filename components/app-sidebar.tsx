@@ -1,10 +1,107 @@
 'use client';
 
-import type React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Calendar, FileText, Home, Settings, Users, Waves, Upload, BarChart3, Bell, Dumbbell, ChevronDown, Menu, X, Database, Shield } from 'lucide-react'
-import { useState, useEffect } from "react"
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  Home,
+  Users,
+  Calendar,
+  Settings,
+  FileText,
+  BarChart3,
+  Shield,
+  Bell,
+  ChevronDown,
+  ChevronRight,
+  Menu,
+  X,
+  Waves,
+  Dumbbell,
+  CreditCard,
+  UserCheck,
+  Activity,
+  Briefcase,
+  Building,
+  MapPin,
+  Clock,
+  Target,
+  TrendingUp,
+  Database,
+  Download,
+  Upload,
+  FileSpreadsheet,
+  PieChart,
+  BarChart,
+  LineChart,
+  Calendar as CalendarIcon,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Edit,
+  Trash2,
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  RefreshCw,
+  Save,
+  ArrowLeft,
+  ArrowRight,
+  ChevronLeft,
+  ChevronUp,
+  Info,
+  HelpCircle,
+  Star,
+  Heart,
+  Bookmark,
+  Share,
+  Copy,
+  ExternalLink,
+  Mail,
+  Phone,
+  Globe,
+  Lock,
+  Unlock,
+  Key,
+  UserPlus,
+  UserMinus,
+  UserX,
+  Crown,
+  Award,
+  Trophy,
+  Medal,
+  Flag,
+  Tag,
+  Folder,
+  FolderOpen,
+  File,
+  Image,
+  Video,
+  Music,
+  Headphones,
+  Mic,
+  Camera,
+  Printer,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Laptop,
+  Server,
+  Cloud,
+  Wifi,
+  Bluetooth,
+  Usb,
+  HardDrive,
+  Cpu,
+  MemoryStick,
+  Battery,
+  Power,
+  Zap
+} from 'lucide-react'
+import ImportService from '../lib/importService';
 
 interface SubMenuItem {
   title: string
@@ -107,6 +204,7 @@ interface AppSidebarProps {
 export function AppSidebar({ isOpen, onToggleSidebar }: AppSidebarProps) {
   const [expandedItems, setExpandedItems] = useState<number[]>([]);
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
   const pathname = usePathname();
 
   const toggleExpanded = (index: number) => {
@@ -142,6 +240,34 @@ export function AppSidebar({ isOpen, onToggleSidebar }: AppSidebarProps) {
       onToggleSidebar(); // Ferme la sidebar sur mobile après la navigation
     }
     // La navigation est gérée par le composant Link
+  };
+
+  // Fonction pour gérer l'import des archives Excel
+  const handleImportArchives = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx,.xls';
+    input.multiple = true;
+    input.onchange = async (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (!files || files.length === 0) return;
+
+      setIsImporting(true);
+      try {
+        const result = await ImportService.importArchivesFromExcel(files);
+        if (result.success) {
+          alert(`Import réussi ! ${result.stats?.added || 0} enregistrements ajoutés.`);
+        } else {
+          alert(`Erreur d'import: ${result.message}`);
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'import:', error);
+        alert('Erreur lors de l\'import des archives');
+      } finally {
+        setIsImporting(false);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -424,7 +550,7 @@ export function AppSidebar({ isOpen, onToggleSidebar }: AppSidebarProps) {
                 ) : item.url ? (
                   <Link
                     href={item.url}
-                    onClick={() => handleMenuItemClick(item.url)} // Ajout du gestionnaire de clic
+                    onClick={() => handleMenuItemClick(item.url!)} // Ajout du gestionnaire de clic
                     className={`nav-item d-flex align-items-center ${isActive ? "active" : ""}`}
                     onMouseEnter={() => setHoveredItem(index)}
                     onMouseLeave={() => setHoveredItem(null)}
@@ -514,6 +640,52 @@ export function AppSidebar({ isOpen, onToggleSidebar }: AppSidebarProps) {
           backdropFilter: "blur(10px)",
         }}
       >
+        {/* Import Archives */}
+        <div className="import-section mb-3">
+          <button
+            onClick={handleImportArchives}
+            disabled={isImporting}
+            className="import-button w-100 d-flex align-items-center justify-content-center"
+            style={{
+              background: isImporting 
+                ? "rgba(22, 163, 74, 0.1)" 
+                : "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)",
+              border: "none",
+              borderRadius: "12px",
+              padding: "12px 16px",
+              color: "white",
+              fontSize: "0.85rem",
+              fontWeight: "600",
+              cursor: isImporting ? "not-allowed" : "pointer",
+              transition: "all 0.2s ease",
+              opacity: isImporting ? 0.7 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!isImporting) {
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(22, 163, 74, 0.3)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isImporting) {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
+              }
+            }}
+          >
+            {isImporting ? (
+              <>
+                <RefreshCw size={16} className="animate-spin me-2" />
+                {isOpen && <span>Import en cours...</span>}
+              </>
+            ) : (
+              <>
+                <Upload size={16} className="me-2" />
+                {isOpen && <span>Importer Archives Excel</span>}
+              </>
+            )}
+          </button>
+        </div>
         {/* Paramètres */}
         <div className="settings-section mb-1">
           <Link

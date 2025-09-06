@@ -24,7 +24,6 @@ export interface AuthResponse {
 export interface LoginRequest {
   email: string;
   password: string;
-  domain?: string;
 }
 
 export interface RegisterRequest {
@@ -38,17 +37,10 @@ export interface RegisterRequest {
   telephone?: string;
 }
 
-export interface LdapUserInfo {
-  employeeId?: string;
-  username: string;
-  email: string;
-  department?: string;
-  firstName?: string;
-  lastName?: string;
-}
 
 export interface LoginFormProps {
   onForgotPassword?: () => void;
+  onRegisterClick?: () => void;
 }
 
 export interface RegisterFormProps {

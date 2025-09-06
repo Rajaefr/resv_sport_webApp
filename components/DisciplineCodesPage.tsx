@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Search,
   Filter,
@@ -19,27 +19,21 @@ import {
   ChevronDown,
   X,
   Save,
+  Loader2,
 } from "lucide-react"
+import { apiService } from "../lib/apiService"
+import ExportService from '../lib/exportService';
 
 interface Discipline {
   code: string
   nom: string
-  participantsCount: number
-  paidCount: number
+  participantsCount?: number
+  paidCount?: number
   isActive: boolean
   price: number
+  description?: string
+  type?: string
 }
-
-const disciplinesData: Discipline[] = [
-  { code: "C001-1", nom: "Adultes Musculation", participantsCount: 25, paidCount: 20, isActive: true, price: 80 },
-  { code: "C001-2", nom: "Enfants Musculation", participantsCount: 15, paidCount: 12, isActive: true, price: 50 },
-  { code: "C058-1", nom: "Adultes Gym", participantsCount: 30, paidCount: 25, isActive: true, price: 100 },
-  { code: "C058-2", nom: "Enfants Gym", participantsCount: 18, paidCount: 10, isActive: false, price: 60 },
-  { code: "C058-3", nom: "Adultes Gym & Swim", participantsCount: 12, paidCount: 12, isActive: true, price: 150 },
-  { code: "C058-4", nom: "Enfants Gym & Swim", participantsCount: 8, paidCount: 6, isActive: true, price: 90 },
-  { code: "C025-1", nom: "Adultes Fitness", participantsCount: 22, paidCount: 18, isActive: true, price: 120 },
-  { code: "C025-2", nom: "Enfants Fitness", participantsCount: 10, paidCount: 8, isActive: false, price: 70 },
-]
 
 const getStatusBadge = (isActive: boolean) => {
   const config = isActive
@@ -84,31 +78,34 @@ const getPaymentBadge = (paid: number, total: number) => {
 
 export function DisciplinesPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [priceFilter, setPriceFilter] = useState("all")
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
-  const [selectedDiscipline, setSelectedDiscipline] = useState<any>(null)
-  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all")
+  const [showModal, setShowModal] = useState(false)
+  const [editingDiscipline, setEditingDiscipline] = useState<Discipline | null>(null)
+  const [disciplines, setDisciplines] = useState<Discipline[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
   const [showNewDisciplineModal, setShowNewDisciplineModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [selectedDiscipline, setSelectedDiscipline] = useState<Discipline | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 8
-
-  // État pour le formulaire de nouvelle discipline
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [priceFilter, setPriceFilter] = useState("all")
   const [newDiscipline, setNewDiscipline] = useState({
     code: "",
     nom: "",
-    price: "",
+    price: 0,
     isActive: true,
     description: "",
+    type: "sport",
     capaciteMax: "",
     ageMin: "",
     ageMax: "",
     dureeSeance: "",
-    frequenceHebdo: "",
+    frequenceHebdo: ""
   })
-
-  // État pour le formulaire d'édition
   const [editForm, setEditForm] = useState({
     code: "",
     nom: "",
@@ -119,68 +116,85 @@ export function DisciplinesPage() {
     ageMin: "",
     ageMax: "",
     dureeSeance: "",
-    frequenceHebdo: "",
+    frequenceHebdo: ""
   })
 
-  const filteredDisciplines = disciplinesData.filter((discipline) => {
-    const matchesSearch =
-      discipline.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      discipline.code.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && discipline.isActive) ||
-      (statusFilter === "inactive" && !discipline.isActive)
-    const matchesPrice =
-      priceFilter === "all" ||
-      (priceFilter === "low" && discipline.price < 80) ||
-      (priceFilter === "medium" && discipline.price >= 80 && discipline.price < 120) ||
-      (priceFilter === "high" && discipline.price >= 120)
-    return matchesSearch && matchesStatus && matchesPrice
-  })
+  // Charger les codes de discipline au montage
+  useEffect(() => {
+    loadDisciplineCodes()
+  }, [])
 
-  // Pagination
-  const totalPages = Math.ceil(filteredDisciplines.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentDisciplines = filteredDisciplines.slice(startIndex, endIndex)
-
-  const clearAdvancedFilters = () => {
-    setPriceFilter("all")
-    setShowAdvancedFilters(false)
+  const loadDisciplineCodes = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await apiService.getDisciplineCodes()
+      
+      if (response.success) {
+        setDisciplines(response.data?.disciplineCodes || [])
+      } else {
+        setError("Erreur lors du chargement des codes de discipline")
+      }
+    } catch (err: any) {
+      console.error("Erreur:", err)
+      setError(err.message || "Erreur lors du chargement")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleSubmitNewDiscipline = (e: React.FormEvent) => {
+  const handleSubmitNewDiscipline = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!newDiscipline.code || !newDiscipline.nom || !newDiscipline.price) {
-      alert("Veuillez remplir tous les champs obligatoires")
-      return
-    }
-
-    const codeExists = disciplinesData.some((d) => d.code === newDiscipline.code)
+    
+    const codeExists = disciplines.some((d: any) => d.code === newDiscipline.code)
     if (codeExists) {
       alert("Ce code de discipline existe déjà")
       return
     }
 
-    console.log("Nouvelle discipline créée:", newDiscipline)
-    alert("Discipline créée avec succès !")
-
-    setNewDiscipline({
-      code: "",
-      nom: "",
-      price: "",
-      isActive: true,
-      description: "",
-      capaciteMax: "",
-      ageMin: "",
-      ageMax: "",
-      dureeSeance: "",
-      frequenceHebdo: "",
-    })
-
-    setShowNewDisciplineModal(false)
+    try {
+      const response = await apiService.createDisciplineCode(newDiscipline)
+      if (response.success) {
+        await loadDisciplineCodes()
+        alert("Discipline créée avec succès !")
+        setNewDiscipline({
+          code: "",
+          nom: "",
+          price: 0,
+          isActive: true,
+          description: "",
+          type: "sport",
+          capaciteMax: "",
+          ageMin: "",
+          ageMax: "",
+          dureeSeance: "",
+          frequenceHebdo: ""
+        })
+        setShowNewDisciplineModal(false)
+      } else {
+        alert("Erreur lors de la création")
+      }
+    } catch (error) {
+      console.error('Erreur création discipline:', error)
+      alert("Erreur lors de la création")
+    }
   }
+
+  const handleExportDisciplines = async () => {
+    setIsExporting(true);
+    try {
+      const result = await ExportService.exportDisciplineCodesToExcel();
+      if (result.success) {
+        alert('Export Excel des codes disciplines réussi !');
+      } else {
+        alert(`Erreur: ${result.message}`);
+      }
+    } catch (error) {
+      alert('Erreur lors de l\'export des codes disciplines');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleDeleteDiscipline = (code: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette discipline ?")) {
@@ -196,7 +210,7 @@ export function DisciplinesPage() {
       nom: discipline.nom,
       price: discipline.price.toString(),
       isActive: discipline.isActive,
-      description: "",
+      description: discipline.description || "",
       capaciteMax: "",
       ageMin: "",
       ageMax: "",
@@ -206,18 +220,58 @@ export function DisciplinesPage() {
     setShowEditModal(true)
   }
 
-  const handleEditDiscipline = () => {
-    if (selectedDiscipline) {
-      console.log("Modification discipline:", editForm)
-      alert(`Discipline ${editForm.nom} modifiée avec succès`)
-      setShowEditModal(false)
+  const handleEditDiscipline = async () => {
+    if (!selectedDiscipline) return
+
+    try {
+      const updateData = {
+        ...editForm,
+        price: parseFloat(editForm.price) || 0
+      }
+      const response = await apiService.updateDisciplineCode(selectedDiscipline.code, updateData)
+      if (response.success) {
+        await loadDisciplineCodes()
+        alert(`Discipline ${editForm.nom} modifiée avec succès`)
+        setShowEditModal(false)
+      } else {
+        alert("Erreur lors de la modification")
+      }
+    } catch (error) {
+      console.error('Erreur modification discipline:', error)
+      alert("Erreur lors de la modification")
     }
   }
 
-  const totalParticipants = disciplinesData.reduce((sum, d) => sum + d.participantsCount, 0)
-  const totalPaid = disciplinesData.reduce((sum, d) => sum + d.paidCount, 0)
-  const activeDisciplines = disciplinesData.filter((d) => d.isActive).length
-  const totalRevenue = disciplinesData.reduce((sum, d) => sum + d.paidCount * d.price, 0)
+  // Filtrage et pagination
+  const filteredDisciplines = disciplines.filter((discipline: any) => {
+    const matchesSearch = discipline.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         discipline.code.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = filterStatus === "all" || 
+                         (filterStatus === "active" && discipline.isActive) ||
+                         (filterStatus === "inactive" && !discipline.isActive)
+    const matchesPrice = priceFilter === "all" ||
+                        (priceFilter === "low" && discipline.price < 80) ||
+                        (priceFilter === "medium" && discipline.price >= 80 && discipline.price <= 120) ||
+                        (priceFilter === "high" && discipline.price > 120)
+    return matchesSearch && matchesStatus && matchesPrice
+  })
+
+  const itemsPerPage = 10
+  const totalPages = Math.ceil(filteredDisciplines.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentDisciplines = filteredDisciplines.slice(startIndex, endIndex)
+
+  const clearAdvancedFilters = () => {
+    setStatusFilter("all")
+    setPriceFilter("all")
+    setShowAdvancedFilters(false)
+  }
+
+  const totalParticipants = disciplines.reduce((sum: number, d: any) => sum + (d.participantsCount || 0), 0)
+  const totalPaid = disciplines.reduce((sum: number, d: any) => sum + (d.paidCount || 0), 0)
+  const activeDisciplines = disciplines.filter((d: any) => d.isActive).length
+  const totalRevenue = disciplines.reduce((sum: number, d: any) => sum + (d.paidCount || 0) * d.price, 0)
 
   return (
     <div className="disciplines-container">
@@ -236,9 +290,22 @@ export function DisciplinesPage() {
             </div>
           </div>
           <div className="header-actions">
-            <button className="btn-header btn-secondary">
-              <Download size={18} />
-              <span>Exporter</span>
+            <button 
+              className="btn-header btn-secondary"
+              onClick={handleExportDisciplines}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Export...</span>
+                </>
+              ) : (
+                <>
+                  <Download size={18} />
+                  <span>Exporter Excel</span>
+                </>
+              )}
             </button>
             <button className="btn-header btn-primary" onClick={() => setShowNewDisciplineModal(true)}>
               <Plus size={18} />
@@ -255,7 +322,7 @@ export function DisciplinesPage() {
             <FileText size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{disciplinesData.length}</div>
+            <div className="stat-value">{disciplines.length}</div>
             <div className="stat-label">Total Disciplines</div>
           </div>
           <div className="stat-trend">+12%</div>
@@ -307,7 +374,7 @@ export function DisciplinesPage() {
           </div>
         </div>
         <div className="filters-controls">
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as "all" | "active" | "inactive")} className="filter-select">
             <option value="all">Tous les statuts</option>
             <option value="active">Actives</option>
             <option value="inactive">Inactives</option>
@@ -403,7 +470,7 @@ export function DisciplinesPage() {
                   </td>
                   <td>
                     <div className="payment-cell">
-                      {getPaymentBadge(discipline.paidCount, discipline.participantsCount)}
+                      {getPaymentBadge(discipline.paidCount || 0, discipline.participantsCount || 0)}
                     </div>
                   </td>
                   <td>{getStatusBadge(discipline.isActive)}</td>
@@ -530,11 +597,11 @@ export function DisciplinesPage() {
                     </div>
                     <div className="info-item">
                       <span className="info-label">Participants</span>
-                      <span className="info-value">{selectedDiscipline.participantsCount}</span>
+                      <span className="info-value">{selectedDiscipline.participantsCount || 0}</span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Participants payés</span>
-                      <span className="info-value">{selectedDiscipline.paidCount}</span>
+                      <span className="info-value">{selectedDiscipline.paidCount || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -544,17 +611,17 @@ export function DisciplinesPage() {
                     <div className="stat-item">
                       <span className="stat-label">Taux de paiement</span>
                       <span className="stat-value">
-                        {Math.round((selectedDiscipline.paidCount / selectedDiscipline.participantsCount) * 100)}%
+                        {Math.round(((selectedDiscipline.paidCount || 0) / (selectedDiscipline.participantsCount || 1)) * 100)}%
                       </span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-label">Revenus générés</span>
-                      <span className="stat-value">{selectedDiscipline.paidCount * selectedDiscipline.price} DH</span>
+                      <span className="stat-value">{(selectedDiscipline.paidCount || 0) * selectedDiscipline.price} DH</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-label">Revenus potentiels</span>
                       <span className="stat-value">
-                        {selectedDiscipline.participantsCount * selectedDiscipline.price} DH
+                        {(selectedDiscipline.participantsCount || 0) * selectedDiscipline.price} DH
                       </span>
                     </div>
                   </div>
@@ -609,7 +676,7 @@ export function DisciplinesPage() {
                       className="form-input"
                       placeholder="Ex: 100"
                       value={newDiscipline.price}
-                      onChange={(e) => setNewDiscipline({ ...newDiscipline, price: e.target.value })}
+                      onChange={(e) => setNewDiscipline({ ...newDiscipline, price: parseFloat(e.target.value) || 0 })}
                       min="0"
                       required
                     />

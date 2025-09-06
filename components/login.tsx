@@ -9,8 +9,7 @@ export default function LoginPage({ onForgotPassword }: LoginFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
-    domain: "ocp.ma"
+    password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,22 +83,6 @@ export default function LoginPage({ onForgotPassword }: LoginFormProps) {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label d-flex align-items-center text-dark fw-medium small">
-            <Building size={16} className="me-2" />
-            <span>Domaine</span>
-          </label>
-          <select
-            className="form-select form-input-ocp"
-            value={formData.domain}
-            onChange={(e) => handleInputChange("domain", e.target.value)}
-            disabled={isLoading}
-          >
-            <option value="ocp.ma">ocp.ma</option>
-            <option value="ocpgroup.ma">ocpgroup.ma</option>
-            <option value="test.ocp.ma">test.ocp.ma</option>
-          </select>
-        </div>
 
         <div className="mb-3">
           <label className="form-label d-flex align-items-center text-dark fw-medium small">

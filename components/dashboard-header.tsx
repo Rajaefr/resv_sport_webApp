@@ -1,9 +1,11 @@
 'use client';
 
-import { User, Bell, Settings, Menu } from 'lucide-react' // Import Menu icon
+import { User, Bell, Settings, Menu, Download, FileText } from 'lucide-react' // Import Menu icon
 import { LogoutButton } from "./logout-button"
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import ExportService from '../lib/exportService';
+import { useState } from 'react';
 
 interface DashboardHeaderProps {
 onToggleSidebar: () => void;
@@ -16,10 +18,27 @@ user: {
 
 export function DashboardHeader({ onToggleSidebar, user }: DashboardHeaderProps) {
 const router = useRouter();
+const [isExporting, setIsExporting] = useState(false);
 
 // Fournir des valeurs par défaut pour les propriétés de l'utilisateur
 // Ceci est une mesure défensive pour éviter les erreurs si 'user' est null/undefined
 const currentUser = user || { firstName: '', lastName: '', role: '' };
+
+const handleExportPDF = async () => {
+  setIsExporting(true);
+  try {
+    const result = await ExportService.exportDashboardStatsToPDF();
+    if (result.success) {
+      alert('Export PDF réussi !');
+    } else {
+      alert(`Erreur: ${result.message}`);
+    }
+  } catch (error) {
+    alert('Erreur lors de l\'export PDF');
+  } finally {
+    setIsExporting(false);
+  }
+};
 
 // This handleLogout is redundant if LogoutButton handles it, but keeping for safety
 const handleLogout = async () => {
@@ -114,6 +133,33 @@ return (
         {/* Right Section */}
         <div className="col-md-4">
           <div className="d-flex align-items-center justify-content-end gap-3"> {/* Augmenter le gap */}
+            {/* Export Statistics Button */}
+            <button
+              className="btn btn-light btn-sm rounded-circle p-1 border-0"
+              onClick={handleExportPDF}
+              disabled={isExporting}
+              title="Exporter les statistiques en PDF"
+              style={{
+                backgroundColor: "#f0fdf4",
+                width: "38px",
+                height: "38px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s ease",
+                opacity: isExporting ? 0.6 : 1
+              }}
+              onMouseEnter={(e) => !isExporting && (e.currentTarget.style.backgroundColor = "#e0ffe0")}
+              onMouseLeave={(e) => !isExporting && (e.currentTarget.style.backgroundColor = "#f0fdf4")}
+            >
+              {isExporting ? (
+                <div className="spinner-border spinner-border-sm" role="status" style={{ width: "16px", height: "16px", color: "#16a34a" }}>
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              ) : (
+                <FileText size={18} style={{ color: "#16a34a" }} />
+              )}
+            </button>
             {/* Notifications */}
             <div className="position-relative">
               <button

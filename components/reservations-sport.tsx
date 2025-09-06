@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Search,
   Filter,
@@ -23,75 +23,22 @@ import {
   User,
   Heart,
   Baby,
+  Loader2,
 } from "lucide-react"
+import { apiService } from "../lib/apiService"
+import ExportService from '../lib/exportService';
 
-// Codes disciplines avec montants
-const disciplineCodes = {
-  "C001-1": { name: "Adultes Musculation", price: 80 },
-  "C001-2": { name: "Enfants Musculation", price: 50 },
-  "C058-1": { name: "Adultes Gym", price: 100 },
-  "C058-2": { name: "Enfants Gym", price: 60 },
-  "C058-3": { name: "Adultes Gym & Swim", price: 150 },
-  "C058-4": { name: "Enfants Gym & Swim", price: 90 },
-  "C025-1": { name: "Adultes Fitness", price: 120 },
-  "C025-2": { name: "Enfants Fitness", price: 70 },
-}
+// Helper function to filter discipline codes by type
+const filterDisciplineCodes = (codes: any[], type: 'adult' | 'child') => {
+  return codes.filter(code => {
+    if (type === 'adult') {
+      return code.nom.includes('Adultes') || code.type === 'mixte';
+    } else {
+      return code.nom.includes('Enfants') || code.type === 'mixte';
+    }
+  });
+};
 
-const reservationsSport = [
-  {
-    id: "S001",
-    user: "Hassan Benjelloun",
-    userType: "Collaborateur",
-    matricule: "33445A",
-    email: "hassan.benjelloun@ocp.ma",
-    salle: "C001-1",
-    activite: "Football",
-    date: "2024-01-15",
-    heureDebut: "14:00",
-    heureFin: "16:00",
-    participants: 5,
-    status: "acceptee",
-    dateCreation: "2024-01-10",
-    commentaire: "Match inter-services",
-    equipement: "Ballons, chasubles",
-    paymentStatus: "Payé",
-    totalAmount: 400,
-    paidAmount: 400,
-    participantsList: [
-      { nom: "Hassan", prenom: "Benjelloun", type: "Collaborateur", disciplineCode: "C001-1", paid: true, amount: 80 },
-      { nom: "Fatima", prenom: "Benjelloun", type: "Conjoint", disciplineCode: "C001-1", paid: true, amount: 80 },
-      { nom: "Ahmed", prenom: "Benjelloun", type: "Enfant", disciplineCode: "C001-2", paid: true, amount: 50 },
-      { nom: "Sara", prenom: "Benjelloun", type: "Enfant", disciplineCode: "C001-2", paid: true, amount: 50 },
-      { nom: "Omar", prenom: "Benjelloun", type: "Enfant Adulte", disciplineCode: "C001-1", paid: true, amount: 80 },
-    ],
-  },
-  {
-    id: "S002",
-    user: "Aicha Benali",
-    userType: "Collaboratrice",
-    matricule: "55667B",
-    email: "aicha.benali@ocp.ma",
-    salle: "C058-2",
-    activite: "Volleyball",
-    date: "2024-01-15",
-    heureDebut: "18:00",
-    heureFin: "19:30",
-    participants: 4,
-    status: "en_attente",
-    dateCreation: "2024-01-12",
-    commentaire: "Tournoi féminin",
-    equipement: "Filet, ballons",
-    paymentStatus: "Partiel",
-    totalAmount: 220,
-    paidAmount: 110,
-    participantsList: [
-      { nom: "Aicha", prenom: "Benali", type: "Collaboratrice", disciplineCode: "C058-1", paid: true, amount: 100 },
-      { nom: "Rachid", prenom: "Benali", type: "Conjoint", disciplineCode: "C058-1", paid: false, amount: 100 },
-      { nom: "Sara", prenom: "Benali", type: "Enfant", disciplineCode: "C058-2", paid: true, amount: 60 },
-      { nom: "Lina", prenom: "Benali", type: "Enfant", disciplineCode: "C058-2", paid: false, amount: 60 },
-    ],
-  },
-]
 
 const getStatusBadge = (status: string) => {
   const statusConfig = {
@@ -181,6 +128,14 @@ export function ReservationsSport() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 8
+  
+  // API state
+  const [reservations, setReservations] = useState<any[]>([])
+  const [participants, setParticipants] = useState<any[]>([])
+  const [availableDisciplines, setAvailableDisciplines] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
 
   // Formulaire nouvelle réservation
   const [step, setStep] = useState(0)
@@ -216,12 +171,78 @@ export function ReservationsSport() {
     equipement: "",
   })
 
-  const filteredReservations = reservationsSport.filter((reservation) => {
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState<any>({})
+  const [showValidationErrors, setShowValidationErrors] = useState(false)
+
+  // Charger les codes de discipline depuis l'API
+  const loadDisciplineCodes = async () => {
+    try {
+      const response = await apiService.getDisciplineCodes()
+      if (response.success) {
+        setAvailableDisciplines(response.data?.disciplineCodes || [])
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des codes de discipline:', error)
+    }
+  }
+
+  // Load reservations from API
+  const loadReservations = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await apiService.getSportReservations()
+      
+      if (response.success) {
+        // Mapper les données avec les nouveaux champs bénéficiaire
+        const mappedReservations = response.data?.items?.map((res: any) => ({
+          id: res.id,
+          user: res.beneficiaryName || res.user || 'Bénéficiaire',
+          userType: res.beneficiaryType || res.userType || 'Utilisateur',
+          matricule: res.beneficiaryMatricule || res.matricule || 'N/A',
+          email: res.beneficiaryEmail || res.email || 'N/A',
+          salle: res.salle || 'Salle Sport',
+          activite: res.activite || 'Activité',
+          date: new Date(res.date).toISOString().split('T')[0],
+          heureDebut: res.heureDebut || '09:00',
+          heureFin: res.heureFin || '10:00',
+          participants: res.participants || 1,
+          status: res.status === 'APPROVED' ? 'acceptee' : 
+                  res.status === 'PENDING' ? 'en_attente' : 'refusee',
+          paymentStatus: res.paymentStatus === 'PAID' ? 'Payé' : 
+                        res.paymentStatus === 'PARTIAL' ? 'Partiel' : 'En attente',
+          totalAmount: res.totalAmount || 0,
+          paidAmount: res.paidAmount || 0,
+          commentaire: res.commentaire || '',
+          equipement: res.equipement || '',
+          participantsList: res.participants_list || []
+        })) || []
+        setReservations(mappedReservations)
+      } else {
+        setError("Erreur lors du chargement des réservations")
+        setReservations([])
+      }
+    } catch (err: any) {
+      console.error("Erreur:", err)
+      setError(err.message || "Erreur lors du chargement")
+      setReservations([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadReservations()
+    loadDisciplineCodes()
+  }, [])
+
+  const filteredReservations = reservations.filter((reservation) => {
     const matchesSearch =
-      reservation.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.matricule.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.salle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.activite.toLowerCase().includes(searchTerm.toLowerCase())
+      reservation.user?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reservation.matricule?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reservation.salle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reservation.activite?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || reservation.status === statusFilter
     const matchesPayment = paymentFilter === "all" || reservation.paymentStatus === paymentFilter
     return matchesSearch && matchesStatus && matchesPayment
@@ -238,14 +259,93 @@ export function ReservationsSport() {
     setShowAdvancedFilters(false)
   }
 
-  const handleDeleteReservation = (id: string) => {
+  // Validation functions
+  const validateFields = () => {
+    const errors: any = {}
+    if (selfInfo.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(selfInfo.email)) {
+      errors.email = "Format d'email invalide"
+    }
+    if (selfInfo.telephone && !/^[0-9+\-\s()]+$/.test(selfInfo.telephone)) {
+      errors.telephone = "Le téléphone ne doit contenir que des chiffres, espaces, +, -, ()"
+    }
+    if (selfInfo.matricule && (selfInfo.matricule.length < 3 || selfInfo.matricule.length > 5)) {
+      errors.matricule = "Le matricule doit contenir entre 3 et 5 caractères"
+    }
+    if (selfInfo.cne && selfInfo.cne.length !== 6) {
+      errors.cne = "Le CNE doit contenir exactement 6 caractères"
+    }
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const areAllFieldsFilled = () => {
+    return selfInfo.nom && selfInfo.prenom && selfInfo.cne && selfInfo.matricule && selfInfo.email && selfInfo.telephone && selfInfo.disciplineCode
+  }
+
+  const handleDeleteReservation = async (id: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette réservation ?")) {
-      console.log("Suppression de la réservation:", id)
-      alert("Réservation supprimée avec succès")
+      try {
+        const response = await apiService.deleteSportReservation(id)
+        if (response.success) {
+          alert("Réservation supprimée avec succès")
+          loadReservations() // Reload data
+        } else {
+          alert("Erreur lors de la suppression")
+        }
+      } catch (error) {
+        console.error("Erreur:", error)
+        alert("Erreur lors de la suppression")
+      }
     }
   }
 
-  const handleNewReservationSubmit = () => {
+  const handleApproveReservation = async (id: string) => {
+    try {
+      const response = await apiService.updateSportReservation(id, { status: "APPROVED" })
+      if (response.success) {
+        alert("Réservation approuvée avec succès")
+        loadReservations() // Reload data
+      } else {
+        alert("Erreur lors de l'approbation")
+      }
+    } catch (error) {
+      console.error("Erreur:", error)
+      alert("Erreur lors de l'approbation")
+    }
+  }
+
+  const handleRejectReservation = async (id: string) => {
+    try {
+      const response = await apiService.updateSportReservation(id, { status: "REJECTED" })
+      if (response.success) {
+        alert("Réservation refusée avec succès")
+        loadReservations() // Reload data
+      } else {
+        alert("Erreur lors du refus")
+      }
+    } catch (error) {
+      console.error("Erreur:", error)
+      alert("Erreur lors du refus")
+    }
+  }
+
+  const handleExportReservations = async () => {
+    setIsExporting(true);
+    try {
+      const result = await ExportService.exportSportReservationsToExcel();
+      if (result.success) {
+        alert('Export Excel des réservations sport réussi !');
+      } else {
+        alert(`Erreur: ${result.message}`);
+      }
+    } catch (error) {
+      alert('Erreur lors de l\'export des réservations');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleNewReservationSubmit = async () => {
     const participants = []
     if (reserveForSelf) {
       participants.push({
@@ -292,25 +392,51 @@ export function ReservationsSport() {
       })
     }
 
-    console.log("Nouvelle réservation:", {
-      user: `${selfInfo.prenom} ${selfInfo.nom}`,
-      userType: userType === "retraite" ? "Retraité" : "Collaborateur",
-      matricule: selfInfo.matricule,
-      participants: participants.length,
-      participantsList: participants,
-    })
-    alert("Réservation créée avec succès")
-    setShowNewReservationModal(false)
-    // Reset form
-    setStep(0)
-    setReserveForSelf(false)
-    setAddSpouses(false)
-    setAddChildren(false)
-    setAddAdultChildren(false)
-    setSelfInfo({ nom: "", prenom: "", cne: "", matricule: "", email: "", telephone: "", disciplineCode: "" })
-    setSpouses([{ nom: "", prenom: "", cne: "", disciplineCode: "" }])
-    setChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M", disciplineCode: "" }])
-    setAdultChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M", cne: "", disciplineCode: "" }])
+    try {
+      const reservationData = {
+        // Données pour le backend unifié
+        activityId: "sport-default", // À adapter selon vos activités
+        salle: "Salle Sport",
+        activite: "Activité Sportive",
+        date: new Date().toISOString().split('T')[0],
+        heureDebut: "09:00",
+        heureFin: "10:00",
+        participants: participants.map(p => ({
+          nom: p.nom,
+          prenom: p.prenom,
+          cne: p.cne || '',
+          type: p.type,
+          disciplineCode: p.disciplineCode || 'C001-1',
+          amount: 100, // Montant par défaut
+          matricule: p.type === 'Titulaire' ? selfInfo.matricule : undefined,
+          email: p.type === 'Titulaire' ? selfInfo.email : undefined
+        })),
+        commentaire: "Réservation créée par admin",
+        equipement: "Standard"
+      }
+      
+      const response = await apiService.createSportReservation(reservationData)
+      if (response.success) {
+        alert("Réservation créée avec succès")
+        setShowNewReservationModal(false)
+        loadReservations() // Reload data
+        // Reset form
+        setStep(0)
+        setReserveForSelf(false)
+        setAddSpouses(false)
+        setAddChildren(false)
+        setAddAdultChildren(false)
+        setSelfInfo({ nom: "", prenom: "", cne: "", matricule: "", email: "", telephone: "", disciplineCode: "" })
+        setSpouses([{ nom: "", prenom: "", cne: "", disciplineCode: "" }])
+        setChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M", disciplineCode: "" }])
+        setAdultChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M", cne: "", disciplineCode: "" }])
+      } else {
+        alert("Erreur lors de la création de la réservation")
+      }
+    } catch (error) {
+      console.error("Erreur:", error)
+      alert("Erreur lors de la création de la réservation")
+    }
   }
 
   const addSpouse = () => {
@@ -414,9 +540,22 @@ export function ReservationsSport() {
             </div>
           </div>
           <div className="header-actions">
-            <button className="btn-header btn-secondary">
-              <Download size={18} />
-              <span>Exporter</span>
+            <button 
+              className="btn-header btn-secondary"
+              onClick={handleExportReservations}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Export...</span>
+                </>
+              ) : (
+                <>
+                  <Download size={18} />
+                  <span>Exporter Excel</span>
+                </>
+              )}
             </button>
             <button className="btn-header btn-primary" onClick={() => setShowNewReservationModal(true)}>
               <Plus size={18} />
@@ -443,7 +582,7 @@ export function ReservationsSport() {
             <CheckCircle size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{reservationsSport.filter((r) => r.status === "acceptee").length}</div>
+            <div className="stat-value">{reservations.filter((r) => r.status === "acceptee").length}</div>
             <div className="stat-label">Acceptées</div>
           </div>
           <div className="stat-trend">+8%</div>
@@ -453,7 +592,7 @@ export function ReservationsSport() {
             <Clock size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{reservationsSport.filter((r) => r.status === "en_attente").length}</div>
+            <div className="stat-value">{reservations.filter((r) => r.status === "en_attente").length}</div>
             <div className="stat-label">En Attente</div>
           </div>
           <div className="stat-trend">-3%</div>
@@ -463,7 +602,7 @@ export function ReservationsSport() {
             <DollarSign size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{reservationsSport.reduce((sum, r) => sum + r.paidAmount, 0)} DH</div>
+            <div className="stat-value">{reservations.reduce((sum, r) => sum + (r.paidAmount || 0), 0)} DH</div>
             <div className="stat-label">Encaissé</div>
           </div>
           <div className="stat-trend">+22%</div>
@@ -563,7 +702,7 @@ export function ReservationsSport() {
                       <div className="user-avatar">
                         {reservation.user
                           .split(" ")
-                          .map((n) => n[0])
+                          .map((n: string) => n[0])
                           .join("")}
                       </div>
                       <div className="user-info">
@@ -811,9 +950,9 @@ export function ReservationsSport() {
                       </h6>
                       {selectedReservation.participantsList
                         ?.filter(
-                          (p) => p.type === "Collaborateur" || p.type === "Collaboratrice" || p.type === "Retraité",
+                          (p: any) => p.type === "Collaborateur" || p.type === "Collaboratrice" || p.type === "Retraité",
                         )
-                        .map((participant, idx) => (
+                        .map((participant: any, idx: number) => (
                           <div key={idx} className="participant-item">
                             <div className="participant-icon">{getParticipantIcon(participant.type)}</div>
                             <div className="participant-info">
@@ -832,15 +971,15 @@ export function ReservationsSport() {
                         ))}
                     </div>
                     {/* Conjoints */}
-                    {selectedReservation.participantsList?.some((p) => p.type === "Conjoint") && (
+                    {selectedReservation.participantsList?.some((p: any) => p.type === "Conjoint") && (
                       <div className="participant-category">
                         <h6 className="category-title">
                           <Heart size={16} />
                           Conjoints
                         </h6>
                         {selectedReservation.participantsList
-                          ?.filter((p) => p.type === "Conjoint")
-                          .map((participant, idx) => (
+                          ?.filter((p: any) => p.type === "Conjoint")
+                          .map((participant: any, idx: number) => (
                             <div key={idx} className="participant-item">
                               <div className="participant-icon">{getParticipantIcon(participant.type)}</div>
                               <div className="participant-info">
@@ -861,7 +1000,7 @@ export function ReservationsSport() {
                     )}
                     {/* Enfants */}
                     {selectedReservation.participantsList?.some(
-                      (p) => p.type === "Enfant" || p.type === "Enfant Adulte",
+                      (p: any) => p.type === "Enfant" || p.type === "Enfant Adulte",
                     ) && (
                       <div className="participant-category">
                         <h6 className="category-title">
@@ -869,8 +1008,8 @@ export function ReservationsSport() {
                           Enfants
                         </h6>
                         {selectedReservation.participantsList
-                          ?.filter((p) => p.type === "Enfant" || p.type === "Enfant Adulte")
-                          .map((participant, idx) => (
+                          ?.filter((p: any) => p.type === "Enfant" || p.type === "Enfant Adulte")
+                          .map((participant: any, idx: number) => (
                             <div key={idx} className="participant-item">
                               <div className="participant-icon">{getParticipantIcon(participant.type)}</div>
                               <div className="participant-info">
@@ -947,6 +1086,7 @@ export function ReservationsSport() {
                       <input
                         type="checkbox"
                         defaultChecked={participant.paid}
+                        data-participant={idx}
                         onChange={(e) => {
                           console.log(`Participant ${participant.nom} payment status:`, e.target.checked)
                         }}
@@ -992,9 +1132,29 @@ export function ReservationsSport() {
               </button>
               <button
                 className="btn-modal btn-primary"
-                onClick={() => {
-                  alert("Paiements mis à jour avec succès")
-                  setShowPaymentModal(false)
+                onClick={async () => {
+                  try {
+                    const paymentUpdates = selectedReservation.participantsList?.map((p: any, idx: number) => ({
+                      participantId: p.id,
+                      paid: document.querySelector(`input[data-participant="${idx}"]`)?.checked || p.paid
+                    }))
+                    
+                    const response = await apiService.updatePaymentStatus(selectedReservation.id, {
+                      payments: paymentUpdates,
+                      notes: paymentNotes
+                    })
+                    
+                    if (response.success) {
+                      await loadReservations()
+                      alert("Paiements mis à jour avec succès")
+                      setShowPaymentModal(false)
+                    } else {
+                      alert("Erreur lors de la mise à jour des paiements")
+                    }
+                  } catch (error) {
+                    console.error('Erreur paiements:', error)
+                    alert("Erreur lors de la mise à jour des paiements")
+                  }
                 }}
               >
                 Sauvegarder
@@ -1310,10 +1470,13 @@ export function ReservationsSport() {
                             <label className="form-label">CNE *</label>
                             <input
                               type="text"
-                              className="form-input"
+                              className={`form-input ${showValidationErrors && validationErrors.cne ? 'error' : ''}`}
                               value={selfInfo.cne}
                               onChange={(e) => setSelfInfo({ ...selfInfo, cne: e.target.value })}
                             />
+                            {showValidationErrors && validationErrors.cne && (
+                              <div className="error-message">{validationErrors.cne}</div>
+                            )}
                           </div>
                           <div className="form-group">
                             <label className="form-label">
@@ -1321,43 +1484,61 @@ export function ReservationsSport() {
                             </label>
                             <input
                               type="text"
-                              className="form-input"
+                              className={`form-input ${showValidationErrors && validationErrors.matricule ? 'error' : ''}`}
                               value={selfInfo.matricule}
                               onChange={(e) => setSelfInfo({ ...selfInfo, matricule: e.target.value })}
                             />
+                            {showValidationErrors && validationErrors.matricule && (
+                              <div className="error-message">{validationErrors.matricule}</div>
+                            )}
                           </div>
                           <div className="form-group">
                             <label className="form-label">Email *</label>
                             <input
                               type="email"
-                              className="form-input"
+                              className={`form-input ${showValidationErrors && validationErrors.email ? 'error' : ''}`}
                               value={selfInfo.email}
                               onChange={(e) => setSelfInfo({ ...selfInfo, email: e.target.value })}
                             />
+                            {showValidationErrors && validationErrors.email && (
+                              <div className="error-message">{validationErrors.email}</div>
+                            )}
                           </div>
                           <div className="form-group">
                             <label className="form-label">Téléphone</label>
                             <input
                               type="tel"
-                              className="form-input"
+                              className={`form-input ${showValidationErrors && validationErrors.telephone ? 'error' : ''}`}
                               value={selfInfo.telephone}
                               onChange={(e) => setSelfInfo({ ...selfInfo, telephone: e.target.value })}
                             />
+                            {showValidationErrors && validationErrors.telephone && (
+                              <div className="error-message">{validationErrors.telephone}</div>
+                            )}
                           </div>
                           <div className="form-group form-group-full">
                             <label className="form-label">Code de discipline *</label>
                             <select
                               className="form-select"
                               value={selfInfo.disciplineCode}
-                              onChange={(e) => setSelfInfo({ ...selfInfo, disciplineCode: e.target.value })}
+                              onChange={(e) =>
+                                setSelfInfo({ ...selfInfo, disciplineCode: e.target.value })
+                              }
+                              required
                             >
-                              <option value="">Sélectionner une discipline</option>
-                              {Object.entries(disciplineCodes).map(([code, info]) => (
-                                <option key={code} value={code}>
-                                  {code} - {info.name} ({info.price} DH)
+                              <option value="">Sélectionner</option>
+                              {filterDisciplineCodes(availableDisciplines, 'adult').map((discipline) => (
+                                <option key={discipline.code} value={discipline.code}>
+                                  {discipline.code} - {discipline.nom} ({discipline.price} DH)
                                 </option>
                               ))}
                             </select>
+                            {!selfInfo.disciplineCode && (
+                              <div className="form-error">Veuillez sélectionner une discipline</div>
+                            )}
+                            {!selfInfo.disciplineCode && (
+                              <div className="form-error">Veuillez sélectionner une discipline</div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1435,16 +1616,28 @@ export function ReservationsSport() {
                                     updated[index].disciplineCode = e.target.value
                                     setSpouses(updated)
                                   }}
+                                  required
                                 >
                                   <option value="">Sélectionner</option>
-                                  {Object.entries(disciplineCodes).map(([code, info]) => (
-                                    <option key={code} value={code}>
-                                      {code} - {info.name} ({info.price} DH)
+                                  {filterDisciplineCodes(availableDisciplines, 'adult').map((discipline) => (
+                                    <option key={discipline.code} value={discipline.code}>
+                                      {discipline.code} - {discipline.nom} ({discipline.price} DH)
                                     </option>
                                   ))}
                                 </select>
+                                {!spouse.disciplineCode && (
+                                  <div className="form-error">Veuillez sélectionner une discipline</div>
+                                )}
                               </div>
                             </div>
+                            {spouse.nom &&
+                              spouse.prenom &&
+                              spouse.cne &&
+                              !spouse.disciplineCode && (
+                                <div className="alert-warning">
+                                  <small>Veuillez sélectionner une discipline pour le conjoint</small>
+                                </div>
+                              )}
                           </div>
                         ))}
                       </div>
@@ -1537,16 +1730,18 @@ export function ReservationsSport() {
                                     updated[index].disciplineCode = e.target.value
                                     setChildren(updated)
                                   }}
+                                  required
                                 >
                                   <option value="">Sélectionner</option>
-                                  {Object.entries(disciplineCodes)
-                                    .filter(([code]) => code.includes("-2"))
-                                    .map(([code, info]) => (
-                                      <option key={code} value={code}>
-                                        {code} - {info.name} ({info.price} DH)
-                                      </option>
-                                    ))}
+                                  {filterDisciplineCodes(availableDisciplines, 'child').map((discipline) => (
+                                    <option key={discipline.code} value={discipline.code}>
+                                      {discipline.code} - {discipline.nom} ({discipline.price} DH)
+                                    </option>
+                                  ))}
                                 </select>
+                                {!child.disciplineCode && (
+                                  <div className="form-error">Veuillez sélectionner une discipline</div>
+                                )}
                               </div>
                             </div>
                             {child.nom &&
@@ -1666,16 +1861,18 @@ export function ReservationsSport() {
                                     updated[index].disciplineCode = e.target.value
                                     setAdultChildren(updated)
                                   }}
+                                  required
                                 >
                                   <option value="">Sélectionner</option>
-                                  {Object.entries(disciplineCodes)
-                                    .filter(([code]) => code.includes("-1"))
-                                    .map(([code, info]) => (
-                                      <option key={code} value={code}>
-                                        {code} - {info.name} ({info.price} DH)
-                                      </option>
-                                    ))}
+                                  {filterDisciplineCodes(availableDisciplines, 'adult').map((discipline) => (
+                                    <option key={discipline.code} value={discipline.code}>
+                                      {discipline.code} - {discipline.nom} ({discipline.price} DH)
+                                    </option>
+                                  ))}
                                 </select>
+                                {!adultChild.disciplineCode && (
+                                  <div className="form-error">Veuillez sélectionner une discipline</div>
+                                )}
                               </div>
                             </div>
                             {adultChild.nom &&
@@ -1768,17 +1965,21 @@ export function ReservationsSport() {
               {step < 2 ? (
                 <button
                   className="btn-modal btn-primary"
-                  onClick={() => setStep(step + 1)}
+                  onClick={() => {
+                    if (step === 1) {
+                      // Show validation errors and check if fields are valid
+                      setShowValidationErrors(true)
+                      if (!validateFields()) {
+                        return // Don't proceed if validation fails
+                      }
+                    }
+                    setStep(step + 1)
+                  }}
                   disabled={
                     step === 0
                       ? !(reserveForSelf || addSpouses || addChildren || addAdultChildren)
                       : step === 1
-                        ? !selfInfo.nom ||
-                          !selfInfo.prenom ||
-                          !selfInfo.cne ||
-                          !selfInfo.matricule ||
-                          !selfInfo.email ||
-                          !selfInfo.disciplineCode
+                        ? !areAllFieldsFilled()
                         : false
                   }
                 >
@@ -2997,6 +3198,18 @@ export function ReservationsSport() {
           outline: none;
           border-color: #16a34a;
           box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        .form-input.error {
+          border-color: #dc2626;
+          background-color: #fef2f2;
+        }
+
+        .error-message {
+          color: #dc2626;
+          font-size: 12px;
+          margin-top: 4px;
+          font-weight: 500;
         }
 
         .form-textarea {

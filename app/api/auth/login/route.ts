@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findUserByEmail } from "@/lib/userStorage";
-import { ldapAuthenticate, getLdapUserInfo } from "@/lib/ldap";
 import { verifyPassword, generateToken, sanitizeUser } from "@/lib/auth";
 import { validateLogin } from "@/lib/validation";
 import type { AuthResponse, User } from "@/lib/types";
@@ -23,52 +22,23 @@ export async function POST(request: NextRequest): Promise<NextResponse<AuthRespo
 
     const { email, password } = body;
 
-    // 1. Vérifier utilisateur local
-    let user = findUserByEmail(email);
+    // Vérifier utilisateur local uniquement
+    const user = findUserByEmail(email);
     
-    if (user) {
-      // Vérifier le mot de passe hashé
-      const isValidPassword = await verifyPassword(password, user.password);
-      if (!isValidPassword) {
-        return NextResponse.json(
-          { success: false, message: "Email ou mot de passe incorrect" },
-          { status: 401 }
-        );
-      }
-    } else {
-      // 2. Tenter l'authentification LDAP
-      const ldapSuccess = await ldapAuthenticate(email, password);
-      if (!ldapSuccess) {
-        return NextResponse.json(
-          { success: false, message: "Email ou mot de passe incorrect" },
-          { status: 401 }
-        );
-      }
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "Email ou mot de passe incorrect" },
+        { status: 401 }
+      );
+    }
 
-      // Récupérer les infos LDAP
-      const ldapInfo = await getLdapUserInfo(email);
-      if (!ldapInfo) {
-        return NextResponse.json(
-          { success: false, message: "Impossible de récupérer les informations utilisateur" },
-          { status: 500 }
-        );
-      }
-
-      // Créer l'utilisateur temporaire (sans le sauvegarder)
-      user = {
-        id: `ldap_${Date.now()}`,
-        firstName: ldapInfo.firstName || "",
-        lastName: ldapInfo.lastName || "",
-        username: ldapInfo.username,
-        email: ldapInfo.email,
-        password: "", // Ne pas stocker le mot de passe LDAP
-        department: ldapInfo.department || "",
-        employeeId: ldapInfo.employeeId || "",
-        matricule: "",
-        role: "user" as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+    // Vérifier le mot de passe hashé
+    const isValidPassword = await verifyPassword(password, user.password);
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { success: false, message: "Email ou mot de passe incorrect" },
+        { status: 401 }
+      );
     }
 
     // Générer le token JWT

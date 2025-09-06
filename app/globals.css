@@ -4,12 +4,6 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: #f0f2f5; /* Light grey background for the "grey blur" effect */
-  background-image: url('/images/bg-img.jpg'); /* Updated to use the new image */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  position: relative; /* Needed for pseudo-element overlay */
-  overflow-x: hidden;
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
@@ -1337,9 +1331,24 @@ html::before {
   display: flex;
   min-height: 100vh;
   flex-direction: column; /* Default to column on small screens */
-  position: relative; /* Ensure it's above the body background */
+  position: relative;
   z-index: 1;
-  background: linear-gradient(180deg, #88b46e62 30%, #ffffff36 70%); /* Applied new gradient */
+  background-image: url('/images/bg-img.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.welcome-split-layout::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(136, 180, 110, 0.4) 30%, rgba(255, 255, 255, 0.3) 70%);
+  z-index: 1;
+  pointer-events: none;
 }
 
 @media (min-width: 992px) { /* Apply row layout on large screens and up */
@@ -1360,6 +1369,7 @@ html::before {
   color: white;
   overflow: hidden;
   flex: 1; /* Take available space */
+  z-index: 2; /* Above the gradient overlay */
 }
 
 @media (min-width: 992px) {
@@ -1481,6 +1491,7 @@ html::before {
   padding: 3rem;
   background-color: transparent; /* Semi-transparent white for auth section */
   flex: 1;
+  z-index: 2; /* Above the gradient overlay */
 }
 
 @media (min-width: 992px) {

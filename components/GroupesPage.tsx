@@ -22,6 +22,7 @@ import {
   Save,
   MapPin,
 } from "lucide-react"
+import ExportService from '../lib/exportService';
 
 interface Groupe {
   code: string
@@ -130,16 +131,20 @@ const getOccupationBadge = (participants: number, capacite: number) => {
 }
 
 export function GroupesPage() {
+  const [groupes, setGroupes] = useState<Groupe[]>(groupesData)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [typeFilter, setTypeFilter] = useState("all")
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
-  const [selectedGroupe, setSelectedGroupe] = useState<any>(null)
+  const [selectedGroupe, setSelectedGroupe] = useState<Groupe | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [showNewGroupeModal, setShowNewGroupeModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 8
+  const [isExporting, setIsExporting] = useState(false)
+
+  // Variables pour les filtres
+  const [typeFilter, setTypeFilter] = useState("all")
+  const itemsPerPage = 10
 
   // État pour le formulaire de nouveau groupe
   const [newGroupe, setNewGroupe] = useState({
@@ -163,7 +168,7 @@ export function GroupesPage() {
     description: "",
   })
 
-  const filteredGroupes = groupesData.filter((groupe) => {
+  const filteredGroupes = groupes.filter((groupe) => {
     const matchesSearch =
       groupe.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       groupe.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -192,6 +197,23 @@ export function GroupesPage() {
     setShowAdvancedFilters(false)
   }
 
+  // Fonction pour bloquer/débloquer un groupe
+  const toggleGroupeStatus = (groupeCode: string) => {
+    const groupe = groupes.find(g => g.code === groupeCode);
+    if (groupe) {
+      const action = groupe.isBlocked ? 'débloquer' : 'bloquer';
+      if (confirm(`Êtes-vous sûr de vouloir ${action} le groupe ${groupeCode} ?`)) {
+        // Mettre à jour le statut du groupe
+        const updatedGroupes = groupes.map(g => 
+          g.code === groupeCode ? { ...g, isBlocked: !g.isBlocked } : g
+        );
+        setGroupes(updatedGroupes);
+        
+        alert(`Groupe ${groupeCode} ${!groupe.isBlocked ? 'bloqué' : 'débloqué'} avec succès`);
+      }
+    }
+  }
+
   const handleSubmitNewGroupe = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -200,13 +222,26 @@ export function GroupesPage() {
       return
     }
 
-    const codeExists = groupesData.some((g) => g.code === newGroupe.code)
+    const codeExists = groupes.some((g) => g.code === newGroupe.code)
     if (codeExists) {
       alert("Ce code de groupe existe déjà")
       return
     }
 
-    console.log("Nouveau groupe créé:", newGroupe)
+    // Créer le nouveau groupe
+    const nouveauGroupe: Groupe = {
+      code: newGroupe.code,
+      type: newGroupe.type,
+      bassin: newGroupe.bassin,
+      capacite: parseInt(newGroupe.capacite),
+      horaires: newGroupe.horaires,
+      isBlocked: newGroupe.isBlocked,
+      participantsCount: 0
+    }
+
+    // Ajouter le nouveau groupe à la liste
+    setGroupes([...groupes, nouveauGroupe])
+    console.log("Nouveau groupe créé:", nouveauGroupe)
     alert("Groupe créé avec succès !")
 
     setNewGroupe({
@@ -221,6 +256,35 @@ export function GroupesPage() {
 
     setShowNewGroupeModal(false)
   }
+
+  const handleExportGroupes = async () => {
+    setIsExporting(true);
+    try {
+      // Export des données de groupes locales (à adapter selon l'API)
+      const formattedData = groupes.map(groupe => ({
+        'Code': groupe.code,
+        'Type': groupe.type,
+        'Bassin': groupe.bassin,
+        'Horaires': groupe.horaires,
+        'Participants': groupe.participantsCount,
+        'Capacité': groupe.capacite,
+        'Statut': groupe.isBlocked ? 'Bloqué' : 'Actif',
+        'Taux occupation (%)': Math.round((groupe.participantsCount / groupe.capacite) * 100)
+      }));
+      
+      // Utiliser la méthode utilitaire pour télécharger
+      const ws = require('xlsx').utils.json_to_sheet(formattedData);
+      const wb = require('xlsx').utils.book_new();
+      require('xlsx').utils.book_append_sheet(wb, ws, 'Groupes');
+      require('xlsx').writeFile(wb, `groupes_ocp_${new Date().toISOString().split('T')[0]}.xlsx`);
+      
+      alert('Export Excel des groupes réussi !');
+    } catch (error) {
+      alert('Erreur lors de l\'export des groupes');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleDeleteGroupe = (code: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce groupe ?")) {
@@ -251,10 +315,10 @@ export function GroupesPage() {
     }
   }
 
-  const totalGroupes = groupesData.length
-  const openGroupes = groupesData.filter((g) => !g.isBlocked).length
-  const totalParticipants = groupesData.reduce((sum, g) => sum + g.participantsCount, 0)
-  const totalCapacite = groupesData.reduce((sum, g) => sum + g.capacite, 0)
+  const totalGroupes = groupes.length
+  const openGroupes = groupes.filter((g) => !g.isBlocked).length
+  const totalParticipants = groupes.reduce((sum, g) => sum + g.participantsCount, 0)
+  const totalCapacite = groupes.reduce((sum, g) => sum + g.capacite, 0)
 
   return (
     <div className="groupes-container">
@@ -273,9 +337,24 @@ export function GroupesPage() {
             </div>
           </div>
           <div className="header-actions">
-            <button className="btn-header btn-secondary">
-              <Download size={18} />
-              <span>Exporter</span>
+            <button 
+              className="btn-header btn-secondary"
+              onClick={handleExportGroupes}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <>
+                  <div className="spinner-border spinner-border-sm" role="status" style={{ width: "16px", height: "16px" }}>
+                    <span className="visually-hidden">Chargement...</span>
+                  </div>
+                  <span>Export...</span>
+                </>
+              ) : (
+                <>
+                  <Download size={18} />
+                  <span>Exporter Excel</span>
+                </>
+              )}
             </button>
             <button className="btn-header btn-primary" onClick={() => setShowNewGroupeModal(true)}>
               <Plus size={18} />
@@ -460,19 +539,46 @@ export function GroupesPage() {
                           setSelectedGroupe(groupe)
                           setShowDetailsModal(true)
                         }}
-                        title="Voir détails"
+                        title="Voir les détails"
                       >
-                        <Eye size={16} />
+                        <Eye size={14} />
                       </button>
-                      <button className="action-btn action-edit" onClick={() => openEditModal(groupe)} title="Éditer">
-                        <Edit size={16} />
+                      <button
+                        className="action-btn action-edit"
+                        onClick={() => {
+                          setSelectedGroupe(groupe)
+                          setEditForm({
+                            code: groupe.code,
+                            type: groupe.type,
+                            bassin: groupe.bassin,
+                            capacite: groupe.capacite.toString(),
+                            horaires: groupe.horaires,
+                            isBlocked: groupe.isBlocked,
+                            description: "",
+                          })
+                          setShowEditModal(true)
+                        }}
+                        title="Modifier"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button
+                        className={`action-btn ${groupe.isBlocked ? 'action-unlock' : 'action-block'}`}
+                        onClick={() => toggleGroupeStatus(groupe.code)}
+                        title={groupe.isBlocked ? 'Débloquer le groupe' : 'Bloquer le groupe'}
+                      >
+                        {groupe.isBlocked ? <CheckCircle size={14} /> : <XCircle size={14} />}
                       </button>
                       <button
                         className="action-btn action-delete"
-                        onClick={() => handleDeleteGroupe(groupe.code)}
+                        onClick={() => {
+                          if (confirm(`Êtes-vous sûr de vouloir supprimer le groupe ${groupe.code} ?`)) {
+                            alert("Groupe supprimé (simulation)")
+                          }
+                        }}
                         title="Supprimer"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
@@ -1372,6 +1478,28 @@ export function GroupesPage() {
 
         .action-delete:hover {
           background: #dc2626;
+          color: white;
+          transform: scale(1.1);
+        }
+
+        .action-block {
+          background: #fef3c7;
+          color: #d97706;
+        }
+
+        .action-block:hover {
+          background: #d97706;
+          color: white;
+          transform: scale(1.1);
+        }
+
+        .action-unlock {
+          background: #dcfce7;
+          color: #16a34a;
+        }
+
+        .action-unlock:hover {
+          background: #16a34a;
           color: white;
           transform: scale(1.1);
         }
