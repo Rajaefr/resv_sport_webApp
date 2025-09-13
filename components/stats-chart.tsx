@@ -186,7 +186,7 @@ export function StatsChart() {
               <div>
                 <p className="mb-1 text-muted small">Revenus</p>
                 <h5 className="mb-0 fw-bold" style={{ color: "#16a34a" }}>
-                  {(stats.overview?.totalRevenue || 0).toLocaleString()}€
+                  {(stats.overview?.totalRevenue || 0).toLocaleString()}dh
                 </h5>
                 <small style={{ color: "#16a34a" }}>
                   <TrendingUp size={12} className="me-1" />
@@ -366,7 +366,7 @@ export function StatsChart() {
                   </div>
                   <div className="text-end">
                     <div className="fw-bold" style={{ color: "#16a34a" }}>
-                      {Number(item.revenue).toLocaleString()}€
+                      {Number(item.revenue).toLocaleString()}dh
                     </div>
                     <div className="progress mt-1" style={{ width: "80px", height: "4px" }}>
                       <div

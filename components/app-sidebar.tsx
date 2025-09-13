@@ -181,12 +181,7 @@ const menuItems: MenuItem[] = [
       },
     ],
   },
-  {
-    title: "Import/Export",
-    icon: Upload,
-    url: "/import-export",
-    description: "Gestion des données",
-  },
+ 
   {
     title: "Notifications",
     icon: Bell,

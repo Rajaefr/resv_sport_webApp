@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "6ea1c42d-c74f-46ea-8e40-4ad61b6abd74"
+      }
+    },
+    "android": {
+      "package": "com.rajaafri.ocpauthsystembootstrap"
+    }
+  }
+}

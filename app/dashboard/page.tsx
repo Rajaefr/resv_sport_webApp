@@ -15,14 +15,14 @@ export default function DashboardPage() {
 
   return (
     <div className="row g-4">
-      {/* Quick Actions en haut avec scroll horizontal */}
+      {/* Quick Actions en haut avec scroll horizontal 
       <div className="col-12">
         <div className="card h-100">
           <div className="card-body">
             <QuickActions />
           </div>
         </div>
-      </div>
+      </div>*/}
 
       {/* Combined Stats and Activity - Admin only */}
       <PermissionGuard permission="canViewStatistics">

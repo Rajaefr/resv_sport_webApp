@@ -6,7 +6,7 @@ import {
   Download,
   Plus,
   Eye,
-  Edit,
+
   Trash2,
   Users,
   Mail,
@@ -22,10 +22,10 @@ import {
 const usersData = [
   {
     id: "U001",
-    nom: "Ahmed Benali",
+    nom: "Ahmed",
     prenom: "Ahmed",
     matricule: "12345A",
-    email: "ahmed.benali@ocp.ma",
+    email: "ahmed@ocp.ma",
     telephone: "+212 6 12 34 56 78",
     dateInscription: "2023-01-15",
     role: "gestionnaire",
@@ -44,10 +44,10 @@ const usersData = [
   },
   {
     id: "U003",
-    nom: "Mohamed Alami",
+    nom: "Mohamed",
     prenom: "Mohamed",
     matricule: "54321C",
-    email: "mohamed.alami@ocp.ma",
+    email: "mohamed@ocp.ma",
     telephone: "+212 6 34 56 78 90",
     dateInscription: "2023-03-10",
     role: "consulteur",
@@ -55,10 +55,10 @@ const usersData = [
   },
   {
     id: "U004",
-    nom: "Khadija Mansouri",
+    nom: "Khadija Ahmed",
     prenom: "Khadija",
     matricule: "98765D",
-    email: "khadija.mansouri@ocp.ma",
+    email: "khadija.Ahmed@ocp.ma",
     telephone: "+212 6 45 67 89 01",
     dateInscription: "2023-04-05",
     role: "consulteur",
@@ -77,10 +77,10 @@ const usersData = [
   },
   {
     id: "U006",
-    nom: "Sara Bennani",
+    nom: "Sara",
     prenom: "Sara",
     matricule: "33445F",
-    email: "sara.bennani@ocp.ma",
+    email: "sara@ocp.ma",
     telephone: "+212 6 67 89 01 23",
     dateInscription: "2023-06-18",
     role: "gestionnaire",
@@ -125,19 +125,12 @@ export function UsersManagement() {
   const [roleFilter, setRoleFilter] = useState("all")
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
+ 
   const [showRoleModal, setShowRoleModal] = useState(false)
   const [showNewUserModal, setShowNewUserModal] = useState(false)
   const [newRole, setNewRole] = useState("")
 
-  // États pour l'édition
-  const [editForm, setEditForm] = useState({
-    nom: "",
-    prenom: "",
-    matricule: "",
-    email: "",
-    telephone: "",
-  })
+ 
 
   // États pour nouveau utilisateur
   const [newUserForm, setNewUserForm] = useState({
@@ -165,13 +158,6 @@ export function UsersManagement() {
     }
   }
 
-  const handleEditUser = () => {
-    if (selectedUser) {
-      console.log("Modification utilisateur:", editForm)
-      alert(`Utilisateur ${editForm.nom} modifié avec succès`)
-      setShowEditModal(false)
-    }
-  }
 
   const handleChangeRole = () => {
     if (selectedUser && newRole) {
@@ -196,17 +182,6 @@ export function UsersManagement() {
     })
   }
 
-  const openEditModal = (user: any) => {
-    setSelectedUser(user)
-    setEditForm({
-      nom: user.nom,
-      prenom: user.prenom,
-      matricule: user.matricule,
-      email: user.email,
-      telephone: user.telephone,
-    })
-    setShowEditModal(true)
-  }
 
   const getRoleStats = () => {
     const stats = {
@@ -380,9 +355,7 @@ export function UsersManagement() {
                       >
                         <Eye size={16} />
                       </button>
-                      <button className="action-btn-enhanced edit" onClick={() => openEditModal(user)} title="Éditer">
-                        <Edit size={16} />
-                      </button>
+                    
                       <button
                         className="action-btn-enhanced delete"
                         onClick={() => handleDeleteUser(user.id)}
@@ -535,90 +508,7 @@ export function UsersManagement() {
         </div>
       )}
 
-      {/* Modal Édition */}
-      {showEditModal && selectedUser && (
-        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  <Edit className="me-2" size={20} />
-                  Modifier l'utilisateur - {selectedUser.nom}
-                </h5>
-                <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
-              </div>
-              <div className="modal-body">
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="mb-3">
-                      <label className="form-label">Nom *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={editForm.nom}
-                        onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="mb-3">
-                      <label className="form-label">Prénom *</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={editForm.prenom}
-                        onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Matricule *</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={editForm.matricule}
-                    onChange={(e) => setEditForm({ ...editForm, matricule: e.target.value })}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Email *</label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Téléphone</label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    value={editForm.telephone}
-                    onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
-                  <X size={16} className="me-1" />
-                  Annuler
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleEditUser}
-                  disabled={!editForm.nom || !editForm.prenom || !editForm.matricule || !editForm.email}
-                >
-                  <Save size={16} className="me-1" />
-                  Sauvegarder
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+    
 
       {/* Modal Changement de Rôle */}
       {showRoleModal && selectedUser && (
@@ -1189,16 +1079,9 @@ export function UsersManagement() {
           transform: scale(1.1);
         }
 
-        .action-btn-enhanced.edit {
-          background: #fef3c7;
-          color: #d97706;
-        }
+     
 
-        .action-btn-enhanced.edit:hover {
-          background: #d97706;
-          color: white;
-          transform: scale(1.1);
-        }
+      
 
         .action-btn-enhanced.delete {
           background: #fecaca;

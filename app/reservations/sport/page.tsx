@@ -1,6 +1,6 @@
 'use client';
 
-import { ReservationsSport } from "@/components/reservations-sport"
+import ReservationsSportPage from "@/components/reservations-sport"
 
 export default function SportPage() {
   return (
@@ -8,7 +8,7 @@ export default function SportPage() {
       <div className="col-12">
         <div className="card h-100">
           <div className="card-body">
-            <ReservationsSport />
+            <ReservationsSportPage />
           </div>
         </div>
       </div>

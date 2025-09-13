@@ -1,110 +1,146 @@
 "use client"
 
-import { CheckCircle, XCircle, Clock, Filter, Waves, Dumbbell } from "lucide-react"
-import { useState } from "react"
+import { CheckCircle, XCircle, Clock, Filter, Waves, Dumbbell, Calendar, Users, UserCheck } from "lucide-react"
+import { useState, useEffect } from "react"
 
-// Données pour les réservations piscine
-const reservationsPiscine = [
+// Données mockées pour les réservations piscine (identiques à reservations-piscine.tsx)
+const reservationsPiscineData = [
   {
     id: "P001",
-    user: "Ahmed Benali",
+    user: "Ahmed Rehani",
     userType: "Collaborateur",
     matricule: "12345A",
-    email: "ahmed.benali@ocp.ma",
-    groupe: "A1-1",
-    bassin: "Grand Bassin",
-    date: "2024-01-15",
+    email: "ahmed.Rehani@ocp.ma",
+    date: "2025-08-15",
     heureDebut: "14:00",
-    heureFin: "15:00",
     participants: 4,
     status: "acceptee",
+    dateCreation: "2025-07-10",
     commentaire: "Réservation pour famille",
+    participantsList: [
+      { nom: "Ahmed", prenom: "Rehani", type: "Collaborateur", groupe: "A1-1" },
+      { nom: "Fatima", prenom: "Rehani", type: "Conjoint", groupe: "A1-1" },
+      { nom: "Sara", prenom: "Rehani", type: "Enfant", age: 12, groupe: "A1-2" },
+      { nom: "Omar", prenom: "Rehani", type: "Enfant", age: 8, groupe: "A1-2" },
+    ],
   },
   {
     id: "P002",
-    user: "Fatima Zahra Alami",
+    user: "Fatima Zahra Reda",
     userType: "Collaboratrice",
     matricule: "67890B",
     email: "fatima.zahra@ocp.ma",
-    groupe: "A1-2",
-    bassin: "Petit Bassin",
-    date: "2024-01-15",
-    heureDebut: "16:00",
-    heureFin: "17:00",
+    date: "2025-07-15",
+    heureCreation: "16:00",
     participants: 1,
     status: "en_attente",
-    commentaire: "Séance aquagym",
+    dateCreation: "2025-07-12",
+    participantsList: [{ nom: "Fatima Zahra", prenom: "Reda", type: "Collaboratrice", groupe: "A1-2" }],
   },
   {
     id: "P003",
-    user: "Mohamed Alami",
+    user: "Mohamed reda",
     userType: "Retraité",
     matricule: "54321C",
-    email: "mohamed.alami@ocp.ma",
-    groupe: "A2-1",
-    bassin: "Grand Bassin",
-    date: "2024-01-16",
-    heureDebut: "10:00",
-    heureFin: "11:30",
+    email: "mohamed.reda@ocp.ma",
+    date: "2025-07-16",
+    heureCreation: "10:00",
     participants: 5,
     status: "refusee",
-    commentaire: "Formation plongée débutant",
+    dateCreation: "2025-07-11",
+    participantsList: [
+      { nom: "Mohamed", prenom: "Reda", type: "Retraité", groupe: "A2-1" },
+      { nom: "Khadija", prenom: "Reda", type: "Conjoint", groupe: "A2-1" },
+      { nom: "Yassine", prenom: "Reda", type: "Enfant", age: 10, groupe: "A2-2" },
+      { nom: "Salma", prenom: "Reda", type: "Enfant", age: 14, groupe: "A2-2" },
+      { nom: "Ali", prenom: "Reda", type: "Enfant", age: 16, groupe: "A2-2" },
+    ],
+  },
+  {
+    id: "P004",
+    user: "Khadija Riad",
+    userType: "Retraitée",
+    matricule: "98765D",
+    email: "khadija.Riad@ocp.ma",
+    date: "2025-07-16",
+    heureCreation: "18:00",
+    participants: 2,
+    status: "en_attente",
+    dateCreation: "2025-07-13",
+    participantsList: [
+      { nom: "Khadija", prenom: "Riad", type: "Retraitée", groupe: "A2-2" },
+      { nom: "Abdellah", prenom: "Riad", type: "Conjoint", groupe: "A2-2" },
+    ],
+  },
+  {
+    id: "P005",
+    user: "Youssef Idrissi",
+    userType: "Collaborateur",
+    matricule: "11223E",
+    email: "youssef.idrissi@ocp.ma",
+    date: "2025-08-17",
+    heureCreation: "08:00",
+    participants: 4,
+    status: "acceptee",
+    dateCreation: "2025-08-14",
+    participantsList: [
+      { nom: "Youssef", prenom: "Idrissi", type: "Collaborateur", groupe: "A1-3" },
+      { nom: "Leila", prenom: "Idrissi", type: "Conjoint", groupe: "A1-3" },
+      { nom: "Amine", prenom: "Idrissi", type: "Enfant", age: 7, groupe: "A1-4" },
+      { nom: "Nadia", prenom: "Idrissi", type: "Enfant", age: 11, groupe: "A1-4" },
+    ],
   },
 ]
 
-// Données pour les réservations sport
-const reservationsSport = [
+// Données mockées pour les réservations sport (identiques à reservations-sport.tsx)
+const reservationsSportData = [
   {
     id: "S001",
-    user: "Hassan Benjelloun",
+    user: "Hassan Rafik",
     userType: "Collaborateur",
     matricule: "33445A",
-    email: "hassan.benjelloun@ocp.ma",
+    email: "hassan.Rafik@ocp.ma",
     salle: "C001-1",
-   
-    date: "2024-01-15",
-    heureDebut: "14:00",
-    heureFin: "16:00",
+    date: "2025-01-15",
+    heureCreation: "14:00",
     participants: 5,
     status: "acceptee",
     commentaire: "Match inter-services",
-    paymentStatus: "Payé",
+    paymentStatus: "PAID",
     totalAmount: 400,
     paidAmount: 400,
   },
   {
     id: "S002",
-    user: "Aicha Benali",
+    user: "Aicha Rehani",
     userType: "Collaboratrice",
     matricule: "55667B",
-    email: "aicha.benali@ocp.ma",
+    email: "aicha.Rehani@ocp.ma",
     salle: "C058-2",
     activite: "Volleyball",
-    date: "2024-01-15",
-    heureDebut: "18:00",
-    heureFin: "19:30",
+    date: "2025-01-15",
+    heureCreation: "18:00",
     participants: 4,
     status: "en_attente",
     commentaire: "Tournoi féminin",
-    paymentStatus: "Partiel",
+    paymentStatus: "PARTIAL",
     totalAmount: 220,
     paidAmount: 110,
   },
   {
     id: "S003",
-    user: "Omar Tazi",
+    user: "Omar Arif",
     userType: "Retraité",
     matricule: "987654321012",
-    email: "omar.tazi@ocp.ma",
+    email: "omar.Arif@ocp.ma",
     salle: "C003-1",
     activite: "Basketball",
-    date: "2024-01-16",
-    heureDebut: "16:00",
-    heureFin: "18:00",
+    date: "2025-01-16",
+    heureCreation: "16:00",
     participants: 10,
     status: "refusee",
     commentaire: "Entraînement équipe",
-    paymentStatus: "En attente",
+    paymentStatus: "PENDING",
     totalAmount: 800,
     paidAmount: 0,
   },
@@ -154,19 +190,19 @@ const getStatusBadge = (status: string) => {
 
 const getPaymentStatusBadge = (status: string) => {
   const statusConfig = {
-    Payé: {
+    PAID: {
       icon: CheckCircle,
       label: "Payé",
       backgroundColor: "#dcfce7",
       color: "#16a34a",
     },
-    Partiel: {
+    PARTIAL: {
       icon: Clock,
       label: "Partiel",
       backgroundColor: "#fef3c7",
       color: "#eab308",
     },
-    "En attente": {
+    PENDING: {
       icon: XCircle,
       label: "En attente",
       backgroundColor: "#fee2e2",
@@ -196,6 +232,29 @@ const getPaymentStatusBadge = (status: string) => {
 
 export function RecentReservations() {
   const [activeTab, setActiveTab] = useState<"piscine" | "sport">("piscine")
+  const [reservationsPiscine, setReservationsPiscine] = useState<any[]>(reservationsPiscineData.slice(0, 5))
+  const [reservationsSport, setReservationsSport] = useState<any[]>(reservationsSportData.slice(0, 5))
+
+  // Fonction pour rafraîchir les données (appelée depuis les autres composants)
+  const refreshData = () => {
+    // Récupérer les données les plus récentes depuis les autres composants
+    if ((window as any).getLatestPiscineReservations) {
+      const latestPiscine = (window as any).getLatestPiscineReservations()
+      setReservationsPiscine(latestPiscine.slice(0, 5))
+    }
+    if ((window as any).getLatestSportReservations) {
+      const latestSport = (window as any).getLatestSportReservations()
+      setReservationsSport(latestSport.slice(0, 5))
+    }
+  }
+
+  // Exposer la fonction de rafraîchissement globalement
+  useEffect(() => {
+    (window as any).refreshRecentReservations = refreshData
+    return () => {
+      delete (window as any).refreshRecentReservations
+    }
+  }, [])
 
   const currentReservations = activeTab === "piscine" ? reservationsPiscine : reservationsSport
 
@@ -213,7 +272,6 @@ export function RecentReservations() {
             </p>
           </div>
           <div className="d-flex gap-1">
-           
             <button
               className="btn btn-sm text-white border-0"
               style={{ backgroundColor: "#16a34a", fontSize: "0.75rem" }}
@@ -224,7 +282,7 @@ export function RecentReservations() {
         </div>
 
         {/* Onglets */}
-        <div className="d-flex gap-2  p-2">
+        <div className="d-flex gap-2 p-2">
           <button
             className={`btn btn-sm d-flex align-items-center gap-2 border-0 ${
               activeTab === "piscine" ? "text-white" : ""
@@ -233,8 +291,8 @@ export function RecentReservations() {
               backgroundColor: activeTab === "piscine" ? "#16a34a" : "#f0fdf4",
               color: activeTab === "piscine" ? "white" : "#16a34a",
               fontSize: "0.8rem",
-              margin:"0.3rem",
-              padding:"0.35rem"
+              margin: "0.3rem",
+              padding: "0.35rem"
             }}
             onClick={() => setActiveTab("piscine")}
           >
@@ -249,8 +307,8 @@ export function RecentReservations() {
               backgroundColor: activeTab === "sport" ? "#16a34a" : "#f0fdf4",
               color: activeTab === "sport" ? "white" : "#16a34a",
               fontSize: "0.8rem",
-              margin:"0.3rem",
-              padding:"0.35rem"
+              margin: "0.3rem",
+              padding: "0.35rem"
             }}
             onClick={() => setActiveTab("sport")}
           >
@@ -262,18 +320,15 @@ export function RecentReservations() {
 
       {/* Table */}
       <div className="card-body">
-        <div className="table-responsive  p-1">
+        <div className="table-responsive p-1">
           <table className="table table-hover mb-0">
             <thead style={{ backgroundColor: "#f9fafb" }}>
               <tr>
                 <th className="border-0 fw-semibold py-2 px-3" style={{ color: "#16a34a", fontSize: "0.8rem" }}>
-                  Utilisateur
+                  {activeTab === "piscine" ? "Titulaire" : "Utilisateur"}
                 </th>
                 <th className="border-0 fw-semibold py-2 px-3" style={{ color: "#16a34a", fontSize: "0.8rem" }}>
-                  Matricule
-                </th>
-                <th className="border-0 fw-semibold py-2 px-3" style={{ color: "#16a34a", fontSize: "0.8rem" }}>
-                  {activeTab === "piscine" ? "Groupe & Bassin" : "Salle & Activité"}
+                  Type & Matricule
                 </th>
                 <th className="border-0 fw-semibold py-2 px-3" style={{ color: "#16a34a", fontSize: "0.8rem" }}>
                   Date & Heure
@@ -282,7 +337,7 @@ export function RecentReservations() {
                   Participants
                 </th>
                 <th className="border-0 fw-semibold py-2 px-3" style={{ color: "#16a34a", fontSize: "0.8rem" }}>
-                  Statut
+                  {activeTab === "piscine" ? "Statut" : "Statut Réservation"}
                 </th>
                 {activeTab === "sport" && (
                   <th className="border-0 fw-semibold py-2 px-3" style={{ color: "#16a34a", fontSize: "0.8rem" }}>
@@ -322,57 +377,55 @@ export function RecentReservations() {
                             {reservation.user}
                           </div>
                           <div className="text-muted" style={{ fontSize: "0.7rem" }}>
-                            {reservation.userType}
+                            {reservation.email}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="align-middle py-2 px-3">
-                      <span
-                        className="badge"
-                        style={{
-                          backgroundColor: "#f0fdf4",
-                          color: "#16a34a",
-                          fontSize: "0.7rem",
-                        }}
-                      >
-                        #{reservation.matricule}
-                      </span>
+                      <div className="d-flex flex-column">
+                        <div className="d-flex align-items-center gap-1 mb-1">
+                          <UserCheck size={12} />
+                          <span style={{ fontSize: "0.75rem", color: "#374151" }}>
+                            {reservation.userType}
+                          </span>
+                        </div>
+                        <span
+                          className="badge"
+                          style={{
+                            backgroundColor: "#f0fdf4",
+                            color: "#16a34a",
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          #{reservation.matricule}
+                        </span>
+                      </div>
                     </td>
                     <td className="align-middle py-2 px-3">
-                      {activeTab === "piscine" ? (
-                        <div>
-                          <div className="fw-medium" style={{ color: "#374151", fontSize: "0.8rem" }}>
-                            {(reservation as any).groupe}
-                          </div>
-                          <small className="text-muted" style={{ fontSize: "0.7rem" }}>
-                            {(reservation as any).bassin}
-                          </small>
+                      <div className="d-flex flex-column">
+                        <div className="d-flex align-items-center gap-1 mb-1">
+                          <Calendar size={12} />
+                          <span style={{ fontSize: "0.75rem", color: "#374151" }}>
+                            {reservation.date}
+                          </span>
                         </div>
-                      ) : (
-                        
-                          <div className="fw-medium" style={{ color: "#374151", fontSize: "0.8rem", textAlign:"center" }}>
-                            {(reservation as any).salle}
-                          </div>
-                        
-              
-                      )}
-                    </td>
-                    <td className="align-middle py-2 px-3">
-                      <div>
-                        <div className="fw-medium" style={{ color: "#374151", fontSize: "0.8rem" }}>
-                          {reservation.date}
+                        <div className="d-flex align-items-center gap-1">
+                          <Clock size={12} />
+                          <span style={{ fontSize: "0.7rem", color: "#6b7280" }}>
+                            {reservation.heureDebut || reservation.heureCreation}
+                          </span>
                         </div>
-                        <small className="text-muted" style={{ fontSize: "0.7rem" }}>
-                          {reservation.heureDebut} - {reservation.heureFin}
-                        </small>
                       </div>
                     </td>
                     <td className="align-middle py-2 px-3">
                       <div className="text-center">
-                        <span className="fw-bold" style={{ color: "#16a34a", fontSize: "0.9rem" }}>
-                          {reservation.participants}
-                        </span>
+                        <div className="d-flex align-items-center justify-content-center gap-1">
+                          <Users size={12} />
+                          <span className="fw-bold" style={{ color: "#16a34a", fontSize: "0.9rem" }}>
+                            {reservation.participants}
+                          </span>
+                        </div>
                         <div className="small text-muted" style={{ fontSize: "0.7rem" }}>
                           participants
                         </div>
@@ -382,9 +435,9 @@ export function RecentReservations() {
                     {activeTab === "sport" && (
                       <td className="align-middle py-2 px-3">
                         <div className="text-center">
-                          {getPaymentStatusBadge((reservation as any).paymentStatus)}
+                          {getPaymentStatusBadge(reservation.paymentStatus)}
                           <div className="small text-muted" style={{ fontSize: "0.7rem" }}>
-                            {(reservation as any).paidAmount}/{(reservation as any).totalAmount} DH
+                            {reservation.paidAmount}/{reservation.totalAmount} DH
                           </div>
                         </div>
                       </td>
@@ -426,8 +479,6 @@ export function RecentReservations() {
                     backgroundColor: "#f9fafb",
                     color: "#16a34a",
                     fontSize: "0.75rem",
-                    
-                  
                   }}
                 >
                   2
@@ -441,7 +492,6 @@ export function RecentReservations() {
                     backgroundColor: "#f9fafb",
                     color: "#16a34a",
                     fontSize: "0.75rem",
-                    
                   }}
                 >
                   Suivant
@@ -454,3 +504,5 @@ export function RecentReservations() {
     </div>
   )
 }
+
+export default RecentReservations;

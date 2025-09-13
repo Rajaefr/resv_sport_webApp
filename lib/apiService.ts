@@ -172,73 +172,102 @@ class ApiService {
         } as ApiResponse<T>;
 
       case '/admin/discipline-codes':
-        return {
-          success: true,
-          data: {
-            disciplineCodes: [
-              {
-                code: 'C001-1',
-                nom: 'Natation Adultes',
-                price: 150,
-                isActive: true,
-                description: 'Natation pour adultes (collaborateurs, conjoints, enfants adultes)',
-                type: 'sport',
-                participantsCount: 30,
-                paidCount: 25
-              },
-              {
-                code: 'C001-2',
-                nom: 'Natation Enfants',
-                price: 100,
-                isActive: true,
-                description: 'Natation pour enfants (âge > 6 ans)',
-                type: 'sport',
-                participantsCount: 20,
-                paidCount: 15
-              },
-              {
-                code: 'C058-1',
-                nom: 'Gym Adultes',
-                price: 120,
-                isActive: true,
-                description: 'Gymnastique et fitness pour adultes',
-                type: 'sport',
-                participantsCount: 20,
-                paidCount: 18
-              },
-              {
-                code: 'C058-2',
-                nom: 'Gym Enfants',
-                price: 80,
-                isActive: true,
-                description: 'Gymnastique pour enfants',
-                type: 'sport',
-                participantsCount: 15,
-                paidCount: 10
-              },
-              {
-                code: 'C058-3',
-                nom: 'Gym & Swim Adultes',
-                price: 250,
-                isActive: true,
-                description: 'Accès combiné gym et piscine pour adultes',
-                type: 'sport',
-                participantsCount: 10,
-                paidCount: 8
-              },
-              {
-                code: 'C058-4',
-                nom: 'Gym & Swim Enfants',
-                price: 180,
-                isActive: true,
-                description: 'Accès combiné gym et piscine pour enfants',
-                type: 'sport',
-                participantsCount: 8,
-                paidCount: 5
-              }
-            ]
-          }
-        } as ApiResponse<T>;
+        if (method.toUpperCase() === 'GET') {
+          return {
+            success: true,
+            data: {
+              disciplineCodes: [
+                {
+                  code: 'C001-1',
+                  nom: 'Natation Adultes',
+                  price: 150,
+                  isActive: true,
+                  description: 'Natation pour adultes (collaborateurs, conjoints, enfants adultes)',
+                  type: 'sport',
+                  participantsCount: 30,
+                  paidCount: 25
+                },
+                {
+                  code: 'C001-2',
+                  nom: 'Natation Enfants',
+                  price: 100,
+                  isActive: true,
+                  description: 'Natation pour enfants (âge > 6 ans)',
+                  type: 'sport',
+                  participantsCount: 20,
+                  paidCount: 15
+                },
+                {
+                  code: 'C058-1',
+                  nom: 'Gym Adultes',
+                  price: 120,
+                  isActive: true,
+                  description: 'Gymnastique et fitness pour adultes',
+                  type: 'sport',
+                  participantsCount: 20,
+                  paidCount: 18
+                },
+                {
+                  code: 'C058-2',
+                  nom: 'Gym Enfants',
+                  price: 80,
+                  isActive: true,
+                  description: 'Gymnastique pour enfants',
+                  type: 'sport',
+                  participantsCount: 15,
+                  paidCount: 10
+                },
+                {
+                  code: 'C058-3',
+                  nom: 'Gym & Swim Adultes',
+                  price: 250,
+                  isActive: true,
+                  description: 'Accès combiné gym et piscine pour adultes',
+                  type: 'sport',
+                  participantsCount: 10,
+                  paidCount: 8
+                },
+                {
+                  code: 'C058-4',
+                  nom: 'Gym & Swim Enfants',
+                  price: 180,
+                  isActive: true,
+                  description: 'Accès combiné gym et piscine pour enfants',
+                  type: 'sport',
+                  participantsCount: 8,
+                  paidCount: 5
+                }
+              ]
+            }
+          } as ApiResponse<T>;
+        }
+        
+        if (method.toUpperCase() === 'POST') {
+          console.log('🧪 Mode test - Simulation création code discipline:', data);
+          return {
+            success: true,
+            data: {
+              ...data,
+              id: `test-${Date.now()}`,
+              createdAt: new Date().toISOString()
+            },
+            message: 'Code de discipline créé avec succès (mode test - non persisté)'
+          } as ApiResponse<T>;
+        }
+        
+        if (method.toUpperCase() === 'PUT') {
+          console.log('🧪 Mode test - Simulation mise à jour code discipline:', data);
+          return {
+            success: true,
+            data: {
+              ...data,
+              updatedAt: new Date().toISOString()
+            },
+            message: 'Code de discipline mis à jour avec succès (mode test - non persisté)'
+          } as ApiResponse<T>;
+        }
+        
+        break;
 
       case '/admin/groupes':
         return {
@@ -378,8 +407,8 @@ class ApiService {
               },
               {
                 id: 'res-003',
-                beneficiaryName: 'Mohammed Alami',
-                beneficiaryEmail: 'mohammed.alami@ocp.ma',
+                beneficiaryName: 'Mohammed Rehan',
+                beneficiaryEmail: 'mohammed.Rehan@ocp.ma',
                 beneficiaryMatricule: 'MAT003',
                 beneficiaryType: 'Retraité',
                 date: '2024-11-25',
@@ -390,7 +419,7 @@ class ApiService {
                 createdAt: '2024-11-20T14:15:00Z',
                 notes: 'Natation libre',
                 participants_list: [
-                  { nom: 'Alami', prenom: 'Mohammed', type: 'Retraité', groupe: 'R1-1' }
+                  { nom: 'Rehan', prenom: 'Mohammed', type: 'Retraité', groupe: 'R1-1' }
                 ]
               },
               {
@@ -443,8 +472,8 @@ class ApiService {
             items: [
               {
                 id: 'sport-001',
-                beneficiaryName: 'Youssef Alami',
-                beneficiaryEmail: 'youssef.alami@ocp.ma',
+                beneficiaryName: 'Youssef Rehan',
+                beneficiaryEmail: 'youssef.Rehan@ocp.ma',
                 beneficiaryMatricule: 'MAT006',
                 beneficiaryType: 'Collaborateur',
                 discipline: 'Tennis',
@@ -456,14 +485,14 @@ class ApiService {
                 createdAt: '2024-12-14T11:00:00Z',
                 notes: 'Match double',
                 participants_list: [
-                  { nom: 'Alami', prenom: 'Youssef', type: 'Collaborateur', groupe: 'TEN-A1' },
-                  { nom: 'Alami', prenom: 'Rachid', type: 'Conjoint', groupe: 'TEN-A1' }
+                  { nom: 'Rehan', prenom: 'Youssef', type: 'Collaborateur', groupe: 'TEN-A1' },
+                  { nom: 'Rehan', prenom: 'Rachid', type: 'Conjoint', groupe: 'TEN-A1' }
                 ]
               },
               {
                 id: 'sport-002',
-                beneficiaryName: 'Laila Benkirane',
-                beneficiaryEmail: 'laila.benkirane@ocp.ma',
+                beneficiaryName: 'Laila Faride',
+                beneficiaryEmail: 'laila.Faride@ocp.ma',
                 beneficiaryMatricule: 'MAT007',
                 beneficiaryType: 'Collaborateur',
                 discipline: 'Football',
@@ -475,11 +504,11 @@ class ApiService {
                 createdAt: '2024-11-25T15:30:00Z',
                 notes: 'Match équipe féminine',
                 participants_list: [
-                  { nom: 'Benkirane', prenom: 'Laila', type: 'Collaborateur', groupe: 'FOOT-F1' },
+                  { nom: 'Faride', prenom: 'Laila', type: 'Collaborateur', groupe: 'FOOT-F1' },
                   { nom: 'Hassani', prenom: 'Amina', type: 'Collaborateur', groupe: 'FOOT-F1' },
                   { nom: 'Idrissi', prenom: 'Khadija', type: 'Collaborateur', groupe: 'FOOT-F1' },
                   { nom: 'Ziani', prenom: 'Fatima', type: 'Collaborateur', groupe: 'FOOT-F1' },
-                  { nom: 'Berrada', prenom: 'Nadia', type: 'Collaborateur', groupe: 'FOOT-F1' },
+                  { nom: 'Idrissi', prenom: 'Nadia', type: 'Collaborateur', groupe: 'FOOT-F1' },
                   { nom: 'Alaoui', prenom: 'Samira', type: 'Collaborateur', groupe: 'FOOT-F1' },
                   { nom: 'Tounsi', prenom: 'Malika', type: 'Collaborateur', groupe: 'FOOT-F1' },
                   { nom: 'Chraibi', prenom: 'Zineb', type: 'Collaborateur', groupe: 'FOOT-F1' }
@@ -487,8 +516,8 @@ class ApiService {
               },
               {
                 id: 'sport-003',
-                beneficiaryName: 'Khalid Mansouri',
-                beneficiaryEmail: 'khalid.mansouri@ocp.ma',
+                beneficiaryName: 'Khalid Maaroufi',
+                beneficiaryEmail: 'khalid.Maaroufi@ocp.ma',
                 beneficiaryMatricule: 'MAT008',
                 beneficiaryType: 'Collaborateur',
                 discipline: 'Basketball',
@@ -500,7 +529,7 @@ class ApiService {
                 createdAt: '2024-10-18T13:45:00Z',
                 notes: 'Entraînement équipe',
                 participants_list: [
-                  { nom: 'Mansouri', prenom: 'Khalid', type: 'Collaborateur', groupe: 'BASK-M1' },
+                  { nom: 'Maaroufi', prenom: 'Khalid', type: 'Collaborateur', groupe: 'BASK-M1' },
                   { nom: 'Bennani', prenom: 'Amine', type: 'Collaborateur', groupe: 'BASK-M1' },
                   { nom: 'Fassi', prenom: 'Mehdi', type: 'Collaborateur', groupe: 'BASK-M1' },
                   { nom: 'Kettani', prenom: 'Saad', type: 'Collaborateur', groupe: 'BASK-M1' },
@@ -509,8 +538,8 @@ class ApiService {
               },
               {
                 id: 'sport-004',
-                beneficiaryName: 'Sanaa Radi',
-                beneficiaryEmail: 'sanaa.radi@ocp.ma',
+                beneficiaryName: 'Sanaa Amine',
+                beneficiaryEmail: 'sanaa.Amine@ocp.ma',
                 beneficiaryMatricule: 'MAT009',
                 beneficiaryType: 'Retraité',
                 discipline: 'Volleyball',
@@ -522,7 +551,7 @@ class ApiService {
                 createdAt: '2024-09-27T10:20:00Z',
                 notes: 'Groupe retraités mixte',
                 participants_list: [
-                  { nom: 'Radi', prenom: 'Sanaa', type: 'Retraité', groupe: 'VOLL-R1' },
+                  { nom: 'Amine', prenom: 'Sanaa', type: 'Retraité', groupe: 'VOLL-R1' },
                   { nom: 'Benali', prenom: 'Hassan', type: 'Retraité', groupe: 'VOLL-R1' },
                   { nom: 'Amrani', prenom: 'Aicha', type: 'Retraité', groupe: 'VOLL-R1' },
                   { nom: 'Filali', prenom: 'Omar', type: 'Retraité', groupe: 'VOLL-R1' },
@@ -532,8 +561,8 @@ class ApiService {
               },
               {
                 id: 'sport-005',
-                beneficiaryName: 'Hamza Berrada',
-                beneficiaryEmail: 'hamza.berrada@ocp.ma',
+                beneficiaryName: 'Hamza Idrissi',
+                beneficiaryEmail: 'hamza.Idrissi@ocp.ma',
                 beneficiaryMatricule: 'MAT010',
                 beneficiaryType: 'Collaborateur',
                 discipline: 'Fitness',
@@ -545,8 +574,8 @@ class ApiService {
                 createdAt: '2024-08-12T07:15:00Z',
                 notes: 'Session matinale',
                 participants_list: [
-                  { nom: 'Berrada', prenom: 'Hamza', type: 'Collaborateur', groupe: 'FIT-M1' },
-                  { nom: 'Berrada', prenom: 'Nour', type: 'Conjoint', groupe: 'FIT-M1' },
+                  { nom: 'Idrissi', prenom: 'Hamza', type: 'Collaborateur', groupe: 'FIT-M1' },
+                  { nom: 'Idrissi', prenom: 'Nour', type: 'Conjoint', groupe: 'FIT-M1' },
                   { nom: 'Cherkaoui', prenom: 'Yassine', type: 'Collaborateur', groupe: 'FIT-M1' }
                 ]
               }
@@ -624,11 +653,12 @@ class ApiService {
           success: true,
           data: {
             revenueByDiscipline: [
-              { code: 'TEN', discipline: 'Tennis', revenue: 4500, reservations_count: 15, unique_users: 8 },
-              { code: 'FOOT', discipline: 'Football', revenue: 3200, reservations_count: 12, unique_users: 24 },
-              { code: 'BASK', discipline: 'Basketball', revenue: 2800, reservations_count: 10, unique_users: 15 },
-              { code: 'VOLL', discipline: 'Volleyball', revenue: 2400, reservations_count: 8, unique_users: 12 },
-              { code: 'FIT', discipline: 'Fitness', revenue: 2850, reservations_count: 18, unique_users: 20 }
+              { code: 'C001-1', discipline: 'Natation Adultes', revenue: 4500, reservations_count: 30, unique_users: 25 },
+              { code: 'C001-2', discipline: 'Natation Enfants', revenue: 2000, reservations_count: 20, unique_users: 15 },
+              { code: 'C058-1', discipline: 'Gym Adultes', revenue: 2400, reservations_count: 20, unique_users: 18 },
+              { code: 'C058-2', discipline: 'Gym Enfants', revenue: 800, reservations_count: 15, unique_users: 10 },
+              { code: 'C058-3', discipline: 'Gym & Swim Adultes', revenue: 2000, reservations_count: 10, unique_users: 8 },
+              { code: 'C058-4', discipline: 'Gym & Swim Enfants', revenue: 1440, reservations_count: 8, unique_users: 5 }
             ]
           }
         } as ApiResponse<T>;
@@ -638,15 +668,28 @@ class ApiService {
           success: true,
           data: {
             occupationRates: [
-              { activity_name: 'Tennis Court A', discipline_code: 'TEN', total_reservations: 15, avg_participants: 2.5, max_capacity: 4, occupation_rate: 62.5 },
-              { activity_name: 'Terrain Football', discipline_code: 'FOOT', total_reservations: 12, avg_participants: 18, max_capacity: 22, occupation_rate: 81.8 },
-              { activity_name: 'Terrain Basketball', discipline_code: 'BASK', total_reservations: 10, avg_participants: 8, max_capacity: 10, occupation_rate: 80 },
-              { activity_name: 'Terrain Volleyball', discipline_code: 'VOLL', total_reservations: 8, avg_participants: 10, max_capacity: 12, occupation_rate: 83.3 },
-              { activity_name: 'Salle Fitness', discipline_code: 'FIT', total_reservations: 18, avg_participants: 15, max_capacity: 20, occupation_rate: 75 },
-              { activity_name: 'Grand Bassin', discipline_code: 'PISC', total_reservations: 20, avg_participants: 12, max_capacity: 15, occupation_rate: 80 },
-              { activity_name: 'Petit Bassin', discipline_code: 'PISC', total_reservations: 15, avg_participants: 6, max_capacity: 8, occupation_rate: 75 },
-              { activity_name: 'Tennis Court B', discipline_code: 'TEN', total_reservations: 8, avg_participants: 2, max_capacity: 4, occupation_rate: 50 }
-            ]
+              { activity_name: 'Grand Bassin', discipline_code: 'Groupe A1-1 - Adultes', total_reservations: 15, avg_participants: 2.5, max_capacity: 4, occupation_rate: 62.5 },
+              { activity_name: 'Petit Bassin', discipline_code: 'Groupe A1-2 - Enfants', total_reservations: 12, avg_participants: 18, max_capacity: 22, occupation_rate: 81.8 },
+              { activity_name: 'Grand Bassin', discipline_code: 'Groupe A1-3 - Adultes', total_reservations: 10, avg_participants: 8, max_capacity: 10, occupation_rate: 80 },
+              { activity_name: 'Petit Bassin', discipline_code: 'Groupe A2-1 - Retraités', total_reservations: 8, avg_participants: 10, max_capacity: 12, occupation_rate: 83.3 },
+              { activity_name: 'Grand Bassin', discipline_code: 'Groupe A2-2 - Mixte', total_reservations: 18, avg_participants: 15, max_capacity: 20, occupation_rate: 75 },
+              { activity_name: 'Petit Bassin', discipline_code: 'Groupe B1-1 - Enfants', total_reservations: 20, avg_participants: 12, max_capacity: 15, occupation_rate: 80 },
+           ]
+          }
+        } as ApiResponse<T>;
+
+      case '/admin/stats/occupation-by-group':
+        return {
+          success: true,
+          data: {
+            occupationByGroup: [
+              { group_code: 'A1-1', group_name: 'Groupe A1-1 - Adultes', bassin: 'Grand Bassin', total_reservations: 15, participants: 12, max_capacity: 15, occupation_rate: 80.0 },
+              { group_code: 'A1-2', group_name: 'Groupe A1-2 - Enfants', bassin: 'Petit Bassin', total_reservations: 8, participants: 8, max_capacity: 10, occupation_rate: 80.0 },
+              { group_code: 'A1-3', group_name: 'Groupe A1-3 - Adultes', bassin: 'Grand Bassin', total_reservations: 12, participants: 10, max_capacity: 15, occupation_rate: 66.7 },
+              { group_code: 'A2-1', group_name: 'Groupe A2-1 - Retraités', bassin: 'Grand Bassin', total_reservations: 18, participants: 14, max_capacity: 15, occupation_rate: 93.3 },
+              { group_code: 'A2-2', group_name: 'Groupe A2-2 - Mixte', bassin: 'Petit Bassin', total_reservations: 10, participants: 6, max_capacity: 10, occupation_rate: 60.0 },
+              { group_code: 'B1-1', group_name: 'Groupe B1-1 - Enfants', bassin: 'Petit Bassin', total_reservations: 5, participants: 3, max_capacity: 12, occupation_rate: 25.0 }
+           ]
           }
         } as ApiResponse<T>;
 
@@ -870,6 +913,10 @@ class ApiService {
 
   async updateDisciplineCode(code: string, codeData: any) {
     return this.put(`/admin/discipline-codes/${code}`, codeData);
+  }
+
+  async deleteDisciplineCode(code: string) {
+    return this.delete(`/admin/discipline-codes/${code}`);
   }
 
   // === GESTION GROUPES ===

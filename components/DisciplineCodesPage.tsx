@@ -152,31 +152,78 @@ export function DisciplinesPage() {
       return
     }
 
+    // Créer l'objet discipline avec des valeurs par défaut
+    const newDisciplineWithDefaults = {
+      ...newDiscipline,
+      participantsCount: 0,
+      paidCount: 0,
+      id: `temp-${Date.now()}`, // ID temporaire
+      createdAt: new Date().toISOString(),
+      isTemporary: true, // Flag pour identifier les éléments temporaires
+      // S'assurer que tous les champs sont explicitement inclus
+      capaciteMax: newDiscipline.capaciteMax || "",
+      ageMin: newDiscipline.ageMin || "",
+      ageMax: newDiscipline.ageMax || "",
+      dureeSeance: newDiscipline.dureeSeance || "",
+      frequenceHebdo: newDiscipline.frequenceHebdo || "",
+      description: newDiscipline.description || "",
+      type: newDiscipline.type || "sport"
+    }
+
     try {
+      // 1. AJOUT IMMÉDIAT AU TABLEAU LOCAL (UI optimiste)
+      setDisciplines(prevDisciplines => [...prevDisciplines, newDisciplineWithDefaults])
+      
+      // Fermer le modal et réinitialiser le formulaire immédiatement
+      setShowNewDisciplineModal(false)
+      setNewDiscipline({
+        code: "",
+        nom: "",
+        price: 0,
+        isActive: true,
+        description: "",
+        type: "sport",
+        capaciteMax: "",
+        ageMin: "",
+        ageMax: "",
+        dureeSeance: "",
+        frequenceHebdo: ""
+      })
+
+      // 2. APPEL API EN ARRIÈRE-PLAN pour la persistance
       const response = await apiService.createDisciplineCode(newDiscipline)
+      
       if (response.success) {
-        await loadDisciplineCodes()
-        alert("Discipline créée avec succès !")
-        setNewDiscipline({
-          code: "",
-          nom: "",
-          price: 0,
-          isActive: true,
-          description: "",
-          type: "sport",
-          capaciteMax: "",
-          ageMin: "",
-          ageMax: "",
-          dureeSeance: "",
-          frequenceHebdo: ""
-        })
-        setShowNewDisciplineModal(false)
+        // Succès: Mettre à jour l'élément temporaire avec les données du serveur
+        setDisciplines(prevDisciplines => 
+          prevDisciplines.map(d => 
+            d.id === newDisciplineWithDefaults.id 
+              ? { ...response.data, isTemporary: false }
+              : d
+          )
+        )
+        
+        // Notification de succès discrète
+        setError(null)
+        console.log("✅ Discipline créée avec succès et synchronisée avec le serveur")
+        
       } else {
-        alert("Erreur lors de la création")
+        // Échec: Supprimer l'élément temporaire et afficher l'erreur
+        setDisciplines(prevDisciplines => 
+          prevDisciplines.filter(d => d.id !== newDisciplineWithDefaults.id)
+        )
+        setError("Erreur lors de la création: " + (response.error?.message || "Erreur inconnue"))
       }
-    } catch (error) {
+      
+    } catch (error: any) {
       console.error('Erreur création discipline:', error)
-      alert("Erreur lors de la création")
+      
+      // En cas d'erreur, supprimer l'élément temporaire
+      setDisciplines(prevDisciplines => 
+        prevDisciplines.filter(d => d.id !== newDisciplineWithDefaults.id)
+      )
+      
+      setError("Erreur lors de la création: " + (error.message || "Erreur de connexion"))
     }
   }
 
@@ -196,10 +243,52 @@ export function DisciplinesPage() {
     }
   };
 
-  const handleDeleteDiscipline = (code: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette discipline ?")) {
+  const handleDeleteDiscipline = async (code: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette discipline ?")) {
+      return
+    }
+
+    try {
+      // 1. SUPPRESSION IMMÉDIATE DU TABLEAU LOCAL (UI optimiste)
+      const disciplineToDelete = disciplines.find(d => d.code === code)
+      setDisciplines(prevDisciplines => prevDisciplines.filter(d => d.code !== code))
+
+      // 2. APPEL API EN ARRIÈRE-PLAN pour la persistance
+      // Note: Pour l'instant, on simule le succès car l'endpoint n'existe pas encore
       console.log("Suppression de la discipline:", code)
-      alert("Discipline supprimée avec succès")
+      
+      // Simulation d'un appel API réussi
+      setTimeout(() => {
+        setError(null)
+        console.log("✅ Discipline supprimée avec succès")
+      }, 500)
+      
+      // TODO: Décommenter quand l'endpoint DELETE sera implémenté
+      /*
+      const response = await apiService.deleteDisciplineCode(code)
+      
+      if (response.success) {
+        setError(null)
+        console.log("✅ Discipline supprimée avec succès")
+      } else {
+        // Échec: restaurer l'élément supprimé
+        if (disciplineToDelete) {
+          setDisciplines(prevDisciplines => [...prevDisciplines, disciplineToDelete])
+        }
+        setError("Erreur lors de la suppression: " + (response.error?.message || "Erreur inconnue"))
+      }
+      */
+      
+    } catch (error: any) {
+      console.error('Erreur suppression discipline:', error)
+      
+      // En cas d'erreur, restaurer l'élément supprimé
+      const disciplineToDelete = disciplines.find(d => d.code === code)
+      if (disciplineToDelete) {
+        setDisciplines(prevDisciplines => [...prevDisciplines, disciplineToDelete])
+      }
+      
+      setError("Erreur lors de la suppression: " + (error.message || "Erreur de connexion"))
     }
   }
 
@@ -224,21 +313,58 @@ export function DisciplinesPage() {
     if (!selectedDiscipline) return
 
     try {
+      // Préparer les données de mise à jour
       const updateData = {
         ...editForm,
         price: parseFloat(editForm.price) || 0
       }
+
+      // 1. MISE À JOUR IMMÉDIATE DU TABLEAU LOCAL (UI optimiste)
+      const updatedDiscipline = { ...selectedDiscipline, ...updateData }
+      setDisciplines(prevDisciplines => 
+        prevDisciplines.map(d => 
+          d.code === selectedDiscipline.code ? updatedDiscipline : d
+        )
+      )
+
+      // Fermer le modal immédiatement
+      setShowEditModal(false)
+
+      // 2. APPEL API EN ARRIÈRE-PLAN pour la persistance
       const response = await apiService.updateDisciplineCode(selectedDiscipline.code, updateData)
+      
       if (response.success) {
-        await loadDisciplineCodes()
-        alert(`Discipline ${editForm.nom} modifiée avec succès`)
-        setShowEditModal(false)
+        // Succès: mettre à jour avec les données du serveur
+        setDisciplines(prevDisciplines => 
+          prevDisciplines.map(d => 
+            d.code === selectedDiscipline.code 
+              ? { ...response.data, ...updateData }
+              : d
+          )
+        )
+        setError(null)
+        console.log("✅ Discipline modifiée avec succès")
       } else {
-        alert("Erreur lors de la modification")
+        // Échec: restaurer l'ancienne version
+        setDisciplines(prevDisciplines => 
+          prevDisciplines.map(d => 
+            d.code === selectedDiscipline.code ? selectedDiscipline : d
+          )
+        )
+        setError("Erreur lors de la modification: " + (response.error?.message || "Erreur inconnue"))
       }
-    } catch (error) {
+      
+    } catch (error: any) {
       console.error('Erreur modification discipline:', error)
-      alert("Erreur lors de la modification")
+      
+      // En cas d'erreur, restaurer l'ancienne version
+      setDisciplines(prevDisciplines => 
+        prevDisciplines.map(d => 
+          d.code === selectedDiscipline.code ? selectedDiscipline : d
+        )
+      )
+      
+      setError("Erreur lors de la modification: " + (error.message || "Erreur de connexion"))
     }
   }
 
@@ -703,7 +829,7 @@ export function DisciplinesPage() {
                     ></textarea>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Capacité maximale</label>
+                    <label className="form-label">Capacité maximale *</label>
                     <input
                       type="number"
                       className="form-input"
@@ -711,10 +837,11 @@ export function DisciplinesPage() {
                       value={newDiscipline.capaciteMax}
                       onChange={(e) => setNewDiscipline({ ...newDiscipline, capaciteMax: e.target.value })}
                       min="1"
+                      required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Âge minimum</label>
+                    <label className="form-label">Âge minimum *</label>
                     <input
                       type="number"
                       className="form-input"
@@ -722,10 +849,11 @@ export function DisciplinesPage() {
                       value={newDiscipline.ageMin}
                       onChange={(e) => setNewDiscipline({ ...newDiscipline, ageMin: e.target.value })}
                       min="0"
+                      required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Âge maximum</label>
+                    <label className="form-label">Âge maximum *</label>
                     <input
                       type="number"
                       className="form-input"
@@ -733,10 +861,11 @@ export function DisciplinesPage() {
                       value={newDiscipline.ageMax}
                       onChange={(e) => setNewDiscipline({ ...newDiscipline, ageMax: e.target.value })}
                       min="0"
+                      required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Durée séance (minutes)</label>
+                    <label className="form-label">Durée séance (minutes) *</label>
                     <input
                       type="number"
                       className="form-input"
@@ -745,14 +874,16 @@ export function DisciplinesPage() {
                       onChange={(e) => setNewDiscipline({ ...newDiscipline, dureeSeance: e.target.value })}
                       min="15"
                       step="15"
+                      required
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Fréquence hebdomadaire</label>
+                    <label className="form-label">Fréquence hebdomadaire *</label>
                     <select
                       className="form-select"
                       value={newDiscipline.frequenceHebdo}
                       onChange={(e) => setNewDiscipline({ ...newDiscipline, frequenceHebdo: e.target.value })}
+                      required
                     >
                       <option value="">Sélectionner...</option>
                       <option value="1">1 fois par semaine</option>
@@ -1827,3 +1958,5 @@ export function DisciplinesPage() {
     </div>
   )
 }
+
+export default DisciplinesPage

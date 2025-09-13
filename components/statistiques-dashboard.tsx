@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   BarChart,
   Bar,
@@ -16,189 +16,153 @@ import {
   Area,
   AreaChart,
 } from "recharts"
-import { TrendingUp, Users, DollarSign, Waves, Target, AlertCircle, CheckCircle, Clock, Filter, Download, RefreshCw, Loader2, Activity } from 'lucide-react'
-import { apiService } from "../lib/apiService"
+import { TrendingUp, Users, DollarSign, Waves, Target, AlertCircle, CheckCircle, Clock, Filter, Download, RefreshCw } from 'lucide-react'
 
-interface IntegratedStats {
-  overview: {
-    totalReservations: number;
-    pendingReservations: number;
-    approvedReservations: number;
-    totalRevenue: number;
-    totalParticipants: number;
-    occupationRate: number;
-    totalActivities: number;
-    totalUsers: number;
-    paymentRate: number;
-  };
-  reservations: {
-    piscine: any[];
-    sport: any[];
-    byStatus: {
-      pending: number;
-      approved: number;
-      rejected: number;
-    };
-  };
-  disciplines: any[];
-  groupes: any[];
-  payments: {
-    total: number;
-    completed: number;
-    pending: number;
-    totalAmount: number;
-  };
-}
+// Données des disciplines (reprises des codes précédents)
+const disciplinesData = [
+  { code: "C001-1", nom: "Adultes Musculation", participantsCount: 25, paidCount: 20, isActive: true, price: 80 },
+  { code: "C001-2", nom: "Enfants Musculation", participantsCount: 15, paidCount: 12, isActive: true, price: 50 },
+  { code: "C058-1", nom: "Adultes Gym", participantsCount: 30, paidCount: 25, isActive: true, price: 100 },
+  { code: "C058-2", nom: "Enfants Gym", participantsCount: 18, paidCount: 10, isActive: false, price: 60 },
+  { code: "C058-3", nom: "Adultes Gym & Swim", participantsCount: 12, paidCount: 12, isActive: true, price: 150 },
+  { code: "C058-4", nom: "Enfants Gym & Swim", participantsCount: 8, paidCount: 6, isActive: true, price: 90 },
+  { code: "C025-1", nom: "Adultes Fitness", participantsCount: 22, paidCount: 18, isActive: true, price: 120 },
+  { code: "C025-2", nom: "Enfants Fitness", participantsCount: 10, paidCount: 8, isActive: false, price: 70 },
+]
+
+// Données des groupes piscine (reprises des codes précédents)
+const groupesData = [
+  {
+    code: "A1-1",
+    horaires: "Lundi 14:00-16:00, Mercredi 08:00-10:00",
+    participantsCount: 12,
+    capacite: 15,
+    isBlocked: false,
+    bassin: "Grand Bassin",
+    type: "Adultes",
+  },
+  {
+    code: "A1-2",
+    horaires: "Mardi 10:00-12:00, Jeudi 14:00-16:00",
+    participantsCount: 8,
+    capacite: 10,
+    isBlocked: true,
+    bassin: "Petit Bassin",
+    type: "Enfants",
+  },
+  {
+    code: "A1-3",
+    horaires: "Vendredi 08:00-10:00, Samedi 16:00-18:00",
+    participantsCount: 10,
+    capacite: 15,
+    isBlocked: false,
+    bassin: "Grand Bassin",
+    type: "Adultes",
+  },
+  {
+    code: "A2-1",
+    horaires: "Lundi 16:00-18:00, Mercredi 10:00-12:00",
+    participantsCount: 14,
+    capacite: 15,
+    isBlocked: false,
+    bassin: "Grand Bassin",
+    type: "Retraités",
+  },
+  {
+    code: "A2-2",
+    horaires: "Mardi 14:00-16:00, Jeudi 16:00-18:00",
+    participantsCount: 6,
+    capacite: 10,
+    isBlocked: false,
+    bassin: "Petit Bassin",
+    type: "Mixte",
+  },
+  {
+    code: "B1-1",
+    horaires: "Vendredi 10:00-12:00",
+    participantsCount: 3,
+    capacite: 12,
+    isBlocked: false,
+    bassin: "Petit Bassin",
+    type: "Enfants",
+  },
+]
 
 export function StatistiquesDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState("month")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [stats, setStats] = useState<IntegratedStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  // Charger les statistiques intégrées depuis l'API
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const response = await apiService.getIntegratedStats()
-      
-      if (response.success && response.data) {
-        setStats(response.data)
-      } else {
-        setError('Erreur lors du chargement des statistiques')
-      }
-    } catch (err) {
-      console.error('Erreur statistiques dashboard:', err)
-      setError('Impossible de charger les statistiques')
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Calculs des statistiques globales
+  const totalParticipantsDisciplines = disciplinesData.reduce((sum, d) => sum + d.participantsCount, 0)
+  const totalPaidDisciplines = disciplinesData.reduce((sum, d) => sum + d.paidCount, 0)
+  const totalRevenueDisciplines = disciplinesData.reduce((sum, d) => sum + d.paidCount * d.price, 0)
+  const activeDisciplines = disciplinesData.filter((d) => d.isActive).length
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
+  const totalParticipantsGroupes = groupesData.reduce((sum, g) => sum + g.participantsCount, 0)
+  const totalCapaciteGroupes = groupesData.reduce((sum, g) => sum + g.capacite, 0)
+  const activeGroupes = groupesData.filter((g) => !g.isBlocked).length
 
-  // Calculer les données pour les graphiques à partir des stats réelles
-  const getRevenueByDiscipline = () => {
-    if (!stats?.disciplines) return []
-    
-    return stats.disciplines.map((d: any) => ({
-      name: d.nom?.split(" ")[1] || d.nom || d.code,
-      revenue: (d.participantsCount || 0) * (d.price || 100), // Estimation du prix
-      participants: d.participantsCount || 0,
-      paid: d.paidCount || 0,
-    }))
-  }
+  const totalParticipants = totalParticipantsDisciplines + totalParticipantsGroupes
+  const totalRevenue = totalRevenueDisciplines
+  const tauxPaiementGlobal = Math.round((totalPaidDisciplines / totalParticipantsDisciplines) * 100)
+  const tauxOccupationGroupes = Math.round((totalParticipantsGroupes / totalCapaciteGroupes) * 100)
 
-  const getParticipantsByType = () => {
-    if (!stats?.disciplines || !stats?.groupes) return []
-    
-    const disciplines = stats.disciplines
-    const groupes = stats.groupes
-    
-    return [
-      {
-        name: "Adultes",
-        disciplines: disciplines
-          .filter((d: any) => d.nom?.includes("Adultes") || d.type === "adulte")
-          .reduce((sum: number, d: any) => sum + (d.participantsCount || 0), 0),
-        groupes: groupes
-          .filter((g: any) => g.type === "Adultes")
-          .reduce((sum: number, g: any) => sum + (g.participantsCount || 0), 0),
-      },
-      {
-        name: "Enfants",
-        disciplines: disciplines
-          .filter((d: any) => d.nom?.includes("Enfants") || d.type === "enfant")
-          .reduce((sum: number, d: any) => sum + (d.participantsCount || 0), 0),
-        groupes: groupes
-          .filter((g: any) => g.type === "Enfants")
-          .reduce((sum: number, g: any) => sum + (g.participantsCount || 0), 0),
-      },
-      {
-        name: "Retraités",
-        disciplines: disciplines
-          .filter((d: any) => d.nom?.includes("Retraités") || d.type === "retraite")
-          .reduce((sum: number, d: any) => sum + (d.participantsCount || 0), 0),
-        groupes: groupes
-          .filter((g: any) => g.type === "Retraités")
-          .reduce((sum: number, g: any) => sum + (g.participantsCount || 0), 0),
-      },
-      {
-        name: "Mixte",
-        disciplines: 0,
-        groupes: groupes
-          .filter((g: any) => g.type === "Mixte")
-          .reduce((sum: number, g: any) => sum + (g.participantsCount || 0), 0),
-      },
-    ]
-  }
+  // Données pour les graphiques
+  const revenueByDiscipline = disciplinesData.map((d) => ({
+    name: d.nom.split(" ")[1] || d.nom,
+    revenue: d.paidCount * d.price,
+    participants: d.participantsCount,
+    paid: d.paidCount,
+  }))
 
-  const getOccupationData = () => {
-    if (!stats?.groupes) return []
-    
-    return stats.groupes.map((g: any) => ({
-      name: g.code,
-      occupation: g.capacite > 0 ? Math.round(((g.participantsCount || 0) / g.capacite) * 100) : 0,
-      participants: g.participantsCount || 0,
-      capacite: g.capacite || 0,
-      type: g.type,
-    }))
-  }
+  const participantsByType = [
+    {
+      name: "Adultes",
+      disciplines: disciplinesData
+        .filter((d) => d.nom.includes("Adultes"))
+        .reduce((sum, d) => sum + d.participantsCount, 0),
+      groupes: groupesData.filter((g) => g.type === "Adultes").reduce((sum, g) => sum + g.participantsCount, 0),
+    },
+    {
+      name: "Enfants",
+      disciplines: disciplinesData
+        .filter((d) => d.nom.includes("Enfants"))
+        .reduce((sum, d) => sum + d.participantsCount, 0),
+      groupes: groupesData.filter((g) => g.type === "Enfants").reduce((sum, g) => sum + g.participantsCount, 0),
+    },
+    {
+      name: "Retraités",
+      disciplines: 0,
+      groupes: groupesData.filter((g) => g.type === "Retraités").reduce((sum, g) => sum + g.participantsCount, 0),
+    },
+    {
+      name: "Mixte",
+      disciplines: 0,
+      groupes: groupesData.filter((g) => g.type === "Mixte").reduce((sum, g) => sum + g.participantsCount, 0),
+    },
+  ]
 
-  const getPaymentStatusData = () => {
-    if (!stats?.payments) return []
-    
-    return [
-      { name: "Payé", value: stats.payments.completed, color: "#16a34a" },
-      { name: "En attente", value: stats.payments.pending, color: "#dc2626" },
-    ]
-  }
+  const occupationData = groupesData.map((g) => ({
+    name: g.code,
+    occupation: Math.round((g.participantsCount / g.capacite) * 100),
+    participants: g.participantsCount,
+    capacite: g.capacite,
+    type: g.type,
+  }))
 
-  const getMonthlyTrend = () => {
-    // Simulation de données mensuelles basées sur les stats actuelles
-    const currentRevenue = stats?.overview?.totalRevenue || 0
-    const currentParticipants = stats?.overview?.totalParticipants || 0
-    
-    return [
-      { month: "Jan", revenue: Math.round(currentRevenue * 0.6), participants: Math.round(currentParticipants * 0.7), newInscriptions: 15 },
-      { month: "Fév", revenue: Math.round(currentRevenue * 0.7), participants: Math.round(currentParticipants * 0.8), newInscriptions: 22 },
-      { month: "Mar", revenue: Math.round(currentRevenue * 0.8), participants: Math.round(currentParticipants * 0.85), newInscriptions: 28 },
-      { month: "Avr", revenue: Math.round(currentRevenue * 0.9), participants: Math.round(currentParticipants * 0.9), newInscriptions: 35 },
-      { month: "Mai", revenue: Math.round(currentRevenue * 0.95), participants: Math.round(currentParticipants * 0.95), newInscriptions: 42 },
-      { month: "Juin", revenue: currentRevenue, participants: currentParticipants, newInscriptions: 38 },
-    ]
-  }
+  const paymentStatusData = [
+    { name: "Payé", value: totalPaidDisciplines, color: "#16a34a" },
+    { name: "Non payé", value: totalParticipantsDisciplines - totalPaidDisciplines, color: "#dc2626" },
+  ]
 
-  if (loading) {
-    return (
-      <div className="dashboard-container">
-        <div className="loading-container">
-          <Loader2 size={32} className="animate-spin" />
-          <p>Chargement des statistiques...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="dashboard-container">
-        <div className="error-container">
-          <AlertCircle size={32} className="text-red-500" />
-          <p className="text-red-600">{error}</p>
-          <button onClick={fetchStats} className="btn btn-primary">
-            <RefreshCw size={16} />
-            Réessayer
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const monthlyTrend = [
+    { month: "Jan", revenue: 12000, participants: 120, newInscriptions: 15 },
+    { month: "Fév", revenue: 15000, participants: 135, newInscriptions: 22 },
+    { month: "Mar", revenue: 18000, participants: 150, newInscriptions: 28 },
+    { month: "Avr", revenue: 22000, participants: 165, newInscriptions: 35 },
+    { month: "Mai", revenue: 25000, participants: 180, newInscriptions: 42 },
+    { month: "Juin", revenue: totalRevenue, participants: totalParticipants, newInscriptions: 38 },
+  ]
 
   return (
     <div className="dashboard-container">
@@ -244,80 +208,17 @@ export function StatistiquesDashboard() {
             <DollarSign size={24} />
           </div>
           <div className="kpi-content">
-            <div className="kpi-value">{stats?.overview?.totalRevenue?.toLocaleString() || '0'} DA</div>
+            <div className="kpi-value">{totalRevenue.toLocaleString()} DH</div>
             <div className="kpi-label">Revenus Total</div>
-            <div className="kpi-trend positive">+12.5%</div>
+            <div className="kpi-trend positive">+12.5% vs mois dernier</div>
           </div>
-          <div className="stats-grid">
-            <div className="stat-card primary">
-              <div className="stat-icon">
-                <Users size={24} />
-              </div>
-              <div className="stat-content">
-                <div className="stat-value">{stats?.overview?.totalRevenue?.toLocaleString() || '0'} DA</div>
-                <div className="stat-label">Revenus Total</div>
-                <div className="stat-change positive">+12.5%</div>
-              </div>
-            </div>
-
-            <div className="stat-card success">
-              <div className="stat-icon">
-                <TrendingUp size={24} />
-              </div>
-              <div className="stat-content">
-                <div className="stat-value">{stats?.overview?.totalParticipants || 0}</div>
-                <div className="stat-label">Total Participants</div>
-                <div className="stat-change positive">+8.3%</div>
-              </div>
-            </div>
-
-            <div className="stat-card warning">
-              <div className="stat-icon">
-                <Activity size={24} />
-              </div>
-              <div className="stat-content">
-                <div className="stat-value">{stats?.disciplines?.length || 0}</div>
-                <div className="stat-label">Disciplines</div>
-                <div className="stat-change neutral">
-                  <span className="stat-detail">{stats?.groupes?.length || 0} Groupes</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="stat-card info">
-              <div className="stat-icon">
-                <DollarSign size={24} />
-              </div>
-              <div className="stat-content">
-                <div className="stat-value">{stats?.overview?.paymentRate || 0}%</div>
-                <div className="stat-label">Taux de Paiement</div>
-                <div className="stat-change">
-                  <span className="stat-detail">
-                    {(stats?.overview?.paymentRate || 0) > 80 ? "Excellent" : (stats?.overview?.paymentRate || 0) > 60 ? "Bon" : "À améliorer"}
-                  </span>
-                  <span className="payment-ratio">
-                    {stats?.payments?.completed || 0}/{(stats?.payments?.completed || 0) + (stats?.payments?.pending || 0)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="stat-card secondary">
-              <div className="stat-icon">
-                <Target size={24} />
-              </div>
-              <div className="stat-content">
-                <div className="stat-value">{stats?.overview?.occupationRate || 0}%</div>
-                <div className="stat-label">Taux d'Occupation</div>
-                <div className="stat-change">
-                  <span className="stat-detail">
-                    {stats?.groupes?.filter((g: any) => !g.isBlocked).length || 0} groupes actifs
-                  </span>
-                  <span className="occupation-status">
-                    {(stats?.groupes?.filter((g: any) => !g.isBlocked).length || 0) > 10 ? "Optimal" : "Faible"}
-                  </span>
-                </div>
-              </div>
+          <div className="kpi-chart">
+            <div className="mini-chart">
+              <div className="chart-bar" style={{ height: "60%" }}></div>
+              <div className="chart-bar" style={{ height: "80%" }}></div>
+              <div className="chart-bar" style={{ height: "70%" }}></div>
+              <div className="chart-bar" style={{ height: "90%" }}></div>
+              <div className="chart-bar" style={{ height: "100%" }}></div>
             </div>
           </div>
         </div>
@@ -327,18 +228,18 @@ export function StatistiquesDashboard() {
             <Users size={24} />
           </div>
           <div className="kpi-content">
-            <div className="kpi-value">{stats?.overview?.totalParticipants || 0}</div>
+            <div className="kpi-value">{totalParticipants}</div>
             <div className="kpi-label">Total Participants</div>
             <div className="kpi-trend positive">+8.3% vs mois dernier</div>
           </div>
           <div className="kpi-breakdown">
             <div className="breakdown-item">
               <span className="breakdown-label">Disciplines</span>
-              <span className="breakdown-value">{stats?.disciplines?.reduce((sum: number, d: any) => sum + (d.participantsCount || 0), 0) || 0}</span>
+              <span className="breakdown-value">{totalParticipantsDisciplines}</span>
             </div>
             <div className="breakdown-item">
               <span className="breakdown-label">Groupes</span>
-              <span className="breakdown-value">{stats?.groupes?.reduce((sum: number, g: any) => sum + (g.participantsCount || 0), 0) || 0}</span>
+              <span className="breakdown-value">{totalParticipantsGroupes}</span>
             </div>
           </div>
         </div>
@@ -348,16 +249,16 @@ export function StatistiquesDashboard() {
             <Target size={24} />
           </div>
           <div className="kpi-content">
-            <div className="kpi-value">{stats?.overview?.paymentRate || 0}%</div>
+            <div className="kpi-value">{tauxPaiementGlobal}%</div>
             <div className="kpi-label">Taux de Paiement</div>
             <div className="kpi-trend positive">+3.2% vs mois dernier</div>
           </div>
           <div className="kpi-progress">
             <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${stats?.overview?.paymentRate || 0}%` }}></div>
+              <div className="progress-fill" style={{ width: `${tauxPaiementGlobal}%` }}></div>
             </div>
             <div className="progress-text">
-              {stats?.payments?.completed || 0}/{(stats?.payments?.completed || 0) + (stats?.payments?.pending || 0)} payés
+              {totalPaidDisciplines}/{totalParticipantsDisciplines} payés
             </div>
           </div>
         </div>
@@ -367,18 +268,18 @@ export function StatistiquesDashboard() {
             <Waves size={24} />
           </div>
           <div className="kpi-content">
-            <div className="kpi-value">{stats?.overview?.occupationRate || 0}%</div>
+            <div className="kpi-value">{tauxOccupationGroupes}%</div>
             <div className="kpi-label">Occupation Groupes</div>
             <div className="kpi-trend neutral">+1.5% vs mois dernier</div>
           </div>
           <div className="kpi-details">
             <div className="detail-item">
               <CheckCircle size={14} />
-              <span>{stats?.groupes?.filter((g: any) => !g.isBlocked).length || 0} groupes actifs</span>
+              <span>{activeGroupes} groupes actifs</span>
             </div>
             <div className="detail-item">
               <AlertCircle size={14} />
-              <span>{stats?.groupes?.filter((g: any) => g.isBlocked).length || 0} bloqués</span>
+              <span>{groupesData.length - activeGroupes} bloqués</span>
             </div>
           </div>
         </div>
@@ -398,7 +299,7 @@ export function StatistiquesDashboard() {
           </div>
           <div className="chart-content">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={getRevenueByDiscipline()}>
+              <BarChart data={revenueByDiscipline}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
@@ -423,7 +324,7 @@ export function StatistiquesDashboard() {
           </div>
           <div className="chart-content">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={getParticipantsByType()}>
+              <BarChart data={participantsByType}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
@@ -455,7 +356,7 @@ export function StatistiquesDashboard() {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={getPaymentStatusData()}
+                  data={paymentStatusData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -463,7 +364,7 @@ export function StatistiquesDashboard() {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {getPaymentStatusData().map((entry: any, index: number) => (
+                  {paymentStatusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -481,7 +382,7 @@ export function StatistiquesDashboard() {
           </div>
           <div className="chart-content">
             <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={getMonthlyTrend()}>
+              <AreaChart data={monthlyTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
@@ -527,21 +428,21 @@ export function StatistiquesDashboard() {
           </div>
           <div className="performance-content">
             <div className="performance-list">
-              {(stats?.disciplines || [])
-                .sort((a: any, b: any) => (b.paidCount || 0) * (b.price || 100) - (a.paidCount || 0) * (a.price || 100))
+              {disciplinesData
+                .sort((a, b) => b.paidCount * b.price - a.paidCount * a.price)
                 .slice(0, 5)
-                .map((discipline: any, index: number) => (
-                  <div key={discipline.code || index} className="performance-item">
+                .map((discipline, index) => (
+                  <div key={discipline.code} className="performance-item">
                     <div className="performance-rank">#{index + 1}</div>
                     <div className="performance-info">
-                      <div className="performance-name">{discipline.nom || discipline.code}</div>
+                      <div className="performance-name">{discipline.nom}</div>
                       <div className="performance-code">{discipline.code}</div>
                     </div>
                     <div className="performance-metrics">
                       <div className="performance-value">
-                        {((discipline.paidCount || 0) * (discipline.price || 100)).toLocaleString()} DA
+                        {(discipline.paidCount * discipline.price).toLocaleString()} DH
                       </div>
-                      <div className="performance-participants">{discipline.participantsCount || 0} participants</div>
+                      <div className="performance-participants">{discipline.participantsCount} participants</div>
                     </div>
                   </div>
                 ))}
@@ -556,24 +457,24 @@ export function StatistiquesDashboard() {
           </div>
           <div className="performance-content">
             <div className="performance-list">
-              {(stats?.groupes || [])
-                .sort((a: any, b: any) => (b.participantsCount || 0) / (b.capacite || 1) - (a.participantsCount || 0) / (a.capacite || 1))
+              {groupesData
+                .sort((a, b) => b.participantsCount / b.capacite - a.participantsCount / a.capacite)
                 .slice(0, 5)
-                .map((groupe: any, index: number) => (
-                  <div key={groupe.code || index} className="performance-item">
+                .map((groupe, index) => (
+                  <div key={groupe.code} className="performance-item">
                     <div className="performance-rank">#{index + 1}</div>
                     <div className="performance-info">
                       <div className="performance-name">{groupe.code}</div>
                       <div className="performance-code">
-                        {groupe.type} - {groupe.bassin || 'Piscine'}
+                        {groupe.type} - {groupe.bassin}
                       </div>
                     </div>
                     <div className="performance-metrics">
                       <div className="performance-value">
-                        {Math.round(((groupe.participantsCount || 0) / (groupe.capacite || 1)) * 100)}%
+                        {Math.round((groupe.participantsCount / groupe.capacite) * 100)}%
                       </div>
                       <div className="performance-participants">
-                        {groupe.participantsCount || 0}/{groupe.capacite || 0}
+                        {groupe.participantsCount}/{groupe.capacite}
                       </div>
                     </div>
                   </div>

@@ -115,7 +115,7 @@ const getParticipantIcon = (type: string) => {
   }
 }
 
-export function ReservationsSport() {
+export default function ReservationsSportPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentFilter, setPaymentFilter] = useState("all")
@@ -126,6 +126,7 @@ export function ReservationsSport() {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showNewReservationModal, setShowNewReservationModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 8
   
@@ -144,6 +145,19 @@ export function ReservationsSport() {
   const [addChildren, setAddChildren] = useState(false)
   const [addAdultChildren, setAddAdultChildren] = useState(false)
   const [userType, setUserType] = useState<"collaborateur" | "retraite">("collaborateur")
+  
+  // Informations du titulaire (celui qui apparaîtra sur le tableau)
+  const [titulaireInfo, setTitulaireInfo] = useState({
+    nom: "",
+    prenom: "",
+    cne: "",
+    matricule: "",
+    email: "",
+    telephone: "",
+    type: "collaborateur" as "collaborateur" | "retraite"
+  })
+  
+  // Informations des participants
   const [selfInfo, setSelfInfo] = useState({
     nom: "",
     prenom: "",
@@ -161,15 +175,11 @@ export function ReservationsSport() {
   const [editForm, setEditForm] = useState({
     user: "",
     email: "",
-    salle: "",
-    activite: "",
     date: "",
-    heureDebut: "",
-    heureFin: "",
+    heureCreation: "",
     participants: 0,
-    commentaire: "",
-    equipement: "",
   })
+ 
 
   // Validation state
   const [validationErrors, setValidationErrors] = useState<any>({})
@@ -202,11 +212,11 @@ export function ReservationsSport() {
           userType: res.beneficiaryType || res.userType || 'Utilisateur',
           matricule: res.beneficiaryMatricule || res.matricule || 'N/A',
           email: res.beneficiaryEmail || res.email || 'N/A',
-          salle: res.salle || 'Salle Sport',
-          activite: res.activite || 'Activité',
+        
+         
           date: new Date(res.date).toISOString().split('T')[0],
-          heureDebut: res.heureDebut || '09:00',
-          heureFin: res.heureFin || '10:00',
+          heureCreation: res.heureCreation || '09:00',
+    
           participants: res.participants || 1,
           status: res.status === 'APPROVED' ? 'acceptee' : 
                   res.status === 'PENDING' ? 'en_attente' : 'refusee',
@@ -259,27 +269,112 @@ export function ReservationsSport() {
     setShowAdvancedFilters(false)
   }
 
-  // Validation functions
-  const validateFields = () => {
-    const errors: any = {}
-    if (selfInfo.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(selfInfo.email)) {
-      errors.email = "Format d'email invalide"
+  // Fonctions de validation
+  const validateMatricule = (matricule: string, isRetraite: boolean = false) => {
+    if (isRetraite) {
+      // Pour RCAR : minimum 5 caractères
+      if (matricule.length < 5) {
+        return "Le numéro RCAR doit contenir au moins 5 caractères"
+      }
+    } else {
+      // Pour matricule : entre 3 et 5 caractères
+      if (matricule.length < 3 || matricule.length > 5) {
+        return "Le matricule doit contenir entre 3 et 5 caractères"
+      }
     }
-    if (selfInfo.telephone && !/^[0-9+\-\s()]+$/.test(selfInfo.telephone)) {
-      errors.telephone = "Le téléphone ne doit contenir que des chiffres, espaces, +, -, ()"
+    return ""
+  }
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return "Format d'email invalide"
     }
-    if (selfInfo.matricule && (selfInfo.matricule.length < 3 || selfInfo.matricule.length > 5)) {
-      errors.matricule = "Le matricule doit contenir entre 3 et 5 caractères"
+    return ""
+  }
+
+  const validateTelephone = (telephone: string) => {
+    // Format marocain : +212xxxxxxxxx (9 chiffres après +212)
+    const phoneRegex = /^\+212[0-9]{9}$/
+    if (!phoneRegex.test(telephone)) {
+      return "Le téléphone doit être au format +212xxxxxxxxx (9 chiffres après +212)"
     }
-    if (selfInfo.cne && selfInfo.cne.length !== 6) {
-      errors.cne = "Le CNE doit contenir exactement 6 caractères"
+    return ""
+  }
+
+  const validateCNE = (cne: string) => {
+    if (cne.length !== 6) {
+      return "Le CNE doit contenir exactement 6 caractères"
     }
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
+    return ""
+  }
+
+  // Fonction pour valider un objet d'informations
+  const validatePersonInfo = (info: any, isRetraite: boolean = false, prefix: string = "") => {
+    const errors: { [key: string]: string } = {}
+    
+    if (info.matricule) {
+      const matriculeError = validateMatricule(info.matricule, isRetraite)
+      if (matriculeError) {
+        errors[`${prefix}matricule`] = matriculeError
+      }
+    }
+    
+    if (info.email) {
+      const emailError = validateEmail(info.email)
+      if (emailError) {
+        errors[`${prefix}email`] = emailError
+      }
+    }
+    
+    if (info.telephone) {
+      const telephoneError = validateTelephone(info.telephone)
+      if (telephoneError) {
+        errors[`${prefix}telephone`] = telephoneError
+      }
+    }
+    
+    if (info.cne) {
+      const cneError = validateCNE(info.cne)
+      if (cneError) {
+        errors[`${prefix}cne`] = cneError
+      }
+    }
+    
+    return errors
   }
 
   const areAllFieldsFilled = () => {
     return selfInfo.nom && selfInfo.prenom && selfInfo.cne && selfInfo.matricule && selfInfo.email && selfInfo.telephone && selfInfo.disciplineCode
+  }
+
+  // Fonction pour déterminer qui est le titulaire
+  const getTitulaire = () => {
+    if (reserveForSelf) {
+      // Si l'admin se réserve lui-même, utiliser ses informations saisies dans le formulaire
+      return {
+        nom: selfInfo.nom,
+        prenom: selfInfo.prenom,
+        matricule: selfInfo.matricule,
+        email: selfInfo.email,
+        type: userType === "collaborateur" ? "Collaborateur" : "Retraité"
+      }
+    } else {
+      // Sinon, utiliser les informations du titulaire saisi
+      return {
+        nom: titulaireInfo.nom,
+        prenom: titulaireInfo.prenom,
+        matricule: titulaireInfo.matricule,
+        email: titulaireInfo.email,
+        type: titulaireInfo.type === "collaborateur" ? "Collaborateur" : "Retraité"
+      }
+    }
+  }
+
+  // Fonction pour générer un nouvel ID de réservation
+  const generateNewReservationId = () => {
+    const maxId = Math.max(...reservations.map(r => parseInt(r.id.toString().replace(/\D/g, '')) || 0))
+    return `S${String(maxId + 1).padStart(3, '0')}`
   }
 
   const handleDeleteReservation = async (id: string) => {
@@ -346,15 +441,65 @@ export function ReservationsSport() {
   };
 
   const handleNewReservationSubmit = async () => {
-    const participants = []
+    // Validation des données
+    if (!reserveForSelf && !addSpouses && !addChildren && !addAdultChildren) {
+      alert("Veuillez sélectionner au moins un type de participant")
+      return
+    }
+
+    // Validation du titulaire si l'admin ne se réserve pas lui-même
+    if (!reserveForSelf && (!titulaireInfo.nom || !titulaireInfo.prenom || !titulaireInfo.matricule || !titulaireInfo.email)) {
+      alert("Veuillez remplir toutes les informations du titulaire")
+      return
+    }
+
+    // Validation des informations personnelles si l'admin se réserve lui-même
+    if (reserveForSelf && (!selfInfo.nom || !selfInfo.prenom || !selfInfo.matricule || !selfInfo.email)) {
+      alert("Veuillez remplir toutes vos informations personnelles")
+      return
+    }
+
+    // Validation des formats pour le titulaire
+    if (!reserveForSelf) {
+      const titulaireErrors = validatePersonInfo(titulaireInfo, titulaireInfo.type === "retraite", "titulaire_")
+      if (Object.keys(titulaireErrors).length > 0) {
+        const errorMessages = Object.values(titulaireErrors).join("\n")
+        alert(`Erreurs dans les informations du titulaire:\n${errorMessages}`)
+        setValidationErrors(prev => ({ ...prev, ...titulaireErrors }))
+        return
+      }
+    }
+
+    // Validation des formats pour les informations personnelles
     if (reserveForSelf) {
+      const selfErrors = validatePersonInfo(selfInfo, userType === "retraite", "self_")
+      if (Object.keys(selfErrors).length > 0) {
+        const errorMessages = Object.values(selfErrors).join("\n")
+        alert(`Erreurs dans vos informations personnelles:\n${errorMessages}`)
+        setValidationErrors(prev => ({ ...prev, ...selfErrors }))
+        return
+      }
+    }
+
+    // Construction de la liste des participants
+    const participants = []
+    let totalParticipants = 0
+
+    // Ajouter l'utilisateur lui-même s'il est sélectionné
+    if (reserveForSelf && selfInfo.nom && selfInfo.prenom) {
       participants.push({
         nom: selfInfo.nom,
         prenom: selfInfo.prenom,
-        type: userType === "retraite" ? "Retraité" : "Titulaire",
+        type: userType === "retraite" ? "Retraité" : "Collaborateur",
         disciplineCode: selfInfo.disciplineCode,
+        cne: selfInfo.cne,
+        matricule: selfInfo.matricule,
+        email: selfInfo.email
       })
+      totalParticipants++
     }
+
+    // Ajouter les conjoints
     if (addSpouses) {
       spouses.forEach((s) => {
         if (s.nom && s.prenom) {
@@ -363,11 +508,15 @@ export function ReservationsSport() {
             prenom: s.prenom,
             type: "Conjoint",
             disciplineCode: s.disciplineCode,
+            cne: s.cne
           })
+          totalParticipants++
         }
       })
     }
-    if (addChildren && userType === "collaborateur") {
+
+    // Ajouter les enfants (seulement pour collaborateurs)
+    if (addChildren && (reserveForSelf ? userType === "collaborateur" : titulaireInfo.type === "collaborateur")) {
       children.forEach((c) => {
         if (c.nom && c.prenom) {
           participants.push({
@@ -375,11 +524,16 @@ export function ReservationsSport() {
             prenom: c.prenom,
             type: "Enfant",
             disciplineCode: c.disciplineCode,
+            dateNaissance: c.dateNaissance,
+            sexe: c.sexe
           })
+          totalParticipants++
         }
       })
     }
-    if (addAdultChildren && userType === "collaborateur") {
+
+    // Ajouter les enfants adultes (seulement pour collaborateurs)
+    if (addAdultChildren && (reserveForSelf ? userType === "collaborateur" : titulaireInfo.type === "collaborateur")) {
       adultChildren.forEach((ac) => {
         if (ac.nom && ac.prenom) {
           participants.push({
@@ -387,56 +541,137 @@ export function ReservationsSport() {
             prenom: ac.prenom,
             type: "Enfant Adulte",
             disciplineCode: ac.disciplineCode,
+            cne: ac.cne,
+            dateNaissance: ac.dateNaissance,
+            sexe: ac.sexe
           })
+          totalParticipants++
         }
       })
     }
 
-    try {
-      const reservationData = {
-        // Données pour le backend unifié
-        activityId: "sport-default", // À adapter selon vos activités
-        salle: "Salle Sport",
-        activite: "Activité Sportive",
-        date: new Date().toISOString().split('T')[0],
-        heureDebut: "09:00",
-        heureFin: "10:00",
-        participants: participants.map(p => ({
-          nom: p.nom,
-          prenom: p.prenom,
-          cne: p.cne || '',
-          type: p.type,
-          disciplineCode: p.disciplineCode || 'C001-1',
-          amount: 100, // Montant par défaut
-          matricule: p.type === 'Titulaire' ? selfInfo.matricule : undefined,
-          email: p.type === 'Titulaire' ? selfInfo.email : undefined
-        })),
-        commentaire: "Réservation créée par admin",
-        equipement: "Standard"
-      }
-      
-      const response = await apiService.createSportReservation(reservationData)
-      if (response.success) {
-        alert("Réservation créée avec succès")
-        setShowNewReservationModal(false)
-        loadReservations() // Reload data
-        // Reset form
-        setStep(0)
-        setReserveForSelf(false)
-        setAddSpouses(false)
-        setAddChildren(false)
-        setAddAdultChildren(false)
-        setSelfInfo({ nom: "", prenom: "", cne: "", matricule: "", email: "", telephone: "", disciplineCode: "" })
-        setSpouses([{ nom: "", prenom: "", cne: "", disciplineCode: "" }])
-        setChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M", disciplineCode: "" }])
-        setAdultChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M", cne: "", disciplineCode: "" }])
-      } else {
-        alert("Erreur lors de la création de la réservation")
-      }
-    } catch (error) {
-      console.error("Erreur:", error)
-      alert("Erreur lors de la création de la réservation")
+    if (totalParticipants === 0) {
+      alert("Aucun participant valide trouvé")
+      return
     }
+
+    // Obtenir les informations du titulaire
+   // Obtenir les informations du titulaire
+const titulaire = getTitulaire()
+
+// Créer l'objet réservation pour l'affichage immédiat
+const newReservation = {
+  id: `TEMP_${Date.now()}`, // ID temporaire
+  user: `${titulaire.prenom} ${titulaire.nom}`,
+  userType: titulaire.type,
+  matricule: titulaire.matricule,
+  email: titulaire.email,
+  date: new Date().toISOString().split('T')[0],
+  heureCreation: new Date().toTimeString().split(' ')[0].substring(0, 5),
+  participants: totalParticipants,
+  status: 'en_attente',
+  paymentStatus: 'En attente',
+  totalAmount: participants.reduce((sum: number, p: any) => sum + (p.amount || 100), 0),
+  paidAmount: 0,
+  commentaire: reserveForSelf 
+    ? `Réservation personnelle pour ${totalParticipants} participant(s)`
+    : `Réservation créée par l'admin pour le titulaire ${titulaire.prenom} ${titulaire.nom} - ${totalParticipants} participant(s)`,
+  equipement: "Standard",
+  participantsList: participants,
+  isTemporary: true
+}
+
+// 1. Ajouter immédiatement au tableau
+setReservations(prev => [newReservation, ...prev])
+
+// 2. Fermer le modal
+alert("Réservation créée avec succès")
+setShowNewReservationModal(false)
+resetNewReservationForm()
+
+// 3. Synchroniser avec le backend en arrière-plan
+try {
+  const reservationData = {
+    activityId: "sport-default",
+    date: newReservation.date,
+    heureCreation: newReservation.heureCreation,
+    participants: participants.map(p => ({
+      nom: p.nom,
+      prenom: p.prenom,
+      cne: p.cne || '',
+      type: p.type,
+      disciplineCode: p.disciplineCode || 'C001-1',
+      amount: 100,
+      matricule: p.matricule || undefined,
+      email: p.email || undefined,
+      dateNaissance: p.dateNaissance || undefined,
+      sexe: p.sexe || undefined
+    })),
+    beneficiaryName: newReservation.user,
+    beneficiaryType: newReservation.userType,
+    beneficiaryMatricule: newReservation.matricule,
+    beneficiaryEmail: newReservation.email,
+    commentaire: newReservation.commentaire,
+    equipement: newReservation.equipement
+  }
+  
+  const response = await apiService.createSportReservation(reservationData)
+  
+  if (response.success) {
+    // Succès : remplacer par l'ID réel du serveur
+    console.log("✅ Synchronisation réussie")
+    setReservations(prev => 
+      prev.map(res => res.id === newReservation.id ? {
+        ...res,
+        id: response.data?.id || res.id,
+        isTemporary: false
+      } : res)
+    )
+  
+  } else {
+    // Échec API : marquer comme non synchronisé
+    console.warn("⚠️ Échec synchronisation:", response.message)
+    setReservations(prev => 
+      prev.map(res => res.id === newReservation.id ? {
+        ...res,
+        commentaire: `${res.commentaire} [Non synchronisé]`,
+        syncError: true
+      } : res)
+    )
+  }
+} catch (error) {
+  // Erreur réseau : mode hors ligne
+  console.error("🔴 Erreur réseau:", error)
+  setReservations(prev => 
+    prev.map(res => res.id === newReservation.id ? {
+      ...res,
+      commentaire: `${res.commentaire} [Mode hors ligne]`,
+      syncError: true
+    } : res)
+  )
+}}
+  // Fonction pour réinitialiser le formulaire
+  const resetNewReservationForm = () => {
+    setStep(0)
+    setReserveForSelf(false)
+    setAddSpouses(false)
+    setAddChildren(false)
+    setAddAdultChildren(false)
+    setUserType("collaborateur")
+    setTitulaireInfo({
+      nom: "",
+      prenom: "",
+      cne: "",
+      matricule: "",
+      email: "",
+      telephone: "",
+      type: "collaborateur"
+    })
+    setSelfInfo({ nom: "", prenom: "", cne: "", matricule: "", email: "", telephone: "", disciplineCode: "" })
+    setSpouses([{ nom: "", prenom: "", cne: "", disciplineCode: "" }])
+    setChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M", disciplineCode: "" }])
+    setAdultChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M", cne: "", disciplineCode: "" }])
+    setValidationErrors({})
   }
 
   const addSpouse = () => {
@@ -500,18 +735,7 @@ export function ReservationsSport() {
 
   const openEditModal = (reservation: any) => {
     setSelectedReservation(reservation)
-    setEditForm({
-      user: reservation.user,
-      email: reservation.email,
-      salle: reservation.salle,
-      activite: reservation.activite,
-      date: reservation.date,
-      heureDebut: reservation.heureDebut,
-      heureFin: reservation.heureFin,
-      participants: reservation.participants,
-      commentaire: reservation.commentaire,
-      equipement: reservation.equipement,
-    })
+  
     setShowEditModal(true)
   }
 
@@ -686,7 +910,6 @@ export function ReservationsSport() {
               <tr>
                 <th>Utilisateur</th>
                 <th>Type & Matricule</th>
-                <th>Salle & Activité</th>
                 <th>Date & Heure</th>
                 <th>Participants</th>
                 <th>Statut Réservation</th>
@@ -720,15 +943,7 @@ export function ReservationsSport() {
                       <div className="matricule">#{reservation.matricule}</div>
                     </div>
                   </td>
-                  <td>
-                    <div className="location-cell">
-                      <div className="location-primary">
-                       
-                        <span>{reservation.salle}</span>
-                      </div>
-                      <div className="location-secondary">{reservation.activite}</div>
-                    </div>
-                  </td>
+                 
                   <td>
                     <div className="datetime-cell">
                       <div className="date-info">
@@ -738,7 +953,7 @@ export function ReservationsSport() {
                       <div className="time-info">
                         <Clock size={14} />
                         <span>
-                          {reservation.heureDebut} - {reservation.heureFin}
+                          {reservation.heureCreation}
                         </span>
                       </div>
                     </div>
@@ -770,13 +985,7 @@ export function ReservationsSport() {
                       >
                         <Eye size={16} />
                       </button>
-                      <button
-                        className="action-btn action-edit"
-                        onClick={() => openEditModal(reservation)}
-                        title="Éditer"
-                      >
-                        <Edit size={16} />
-                      </button>
+                     
                       <button
                         className="action-btn action-payment"
                         onClick={() => {
@@ -890,14 +1099,7 @@ export function ReservationsSport() {
                       <span className="info-label">Email</span>
                       <span className="info-value">{selectedReservation.email}</span>
                     </div>
-                    <div className="info-item">
-                      <span className="info-label">Salle</span>
-                      <span className="info-value">{selectedReservation.salle}</span>
-                    </div>
-                    <div className="info-item">
-                      <span className="info-label">Activité</span>
-                      <span className="info-value">{selectedReservation.activite}</span>
-                    </div>
+                    
                     <div className="info-item">
                       <span className="info-label">Date</span>
                       <span className="info-value">{selectedReservation.date}</span>
@@ -905,17 +1107,14 @@ export function ReservationsSport() {
                     <div className="info-item">
                       <span className="info-label">Horaire</span>
                       <span className="info-value">
-                        {selectedReservation.heureDebut} - {selectedReservation.heureFin}
+                        {selectedReservation.heureCreation}
                       </span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Statut</span>
                       <span className="info-value">{getStatusBadge(selectedReservation.status)}</span>
                     </div>
-                    <div className="info-item">
-                      <span className="info-label">Équipement</span>
-                      <span className="info-value">{selectedReservation.equipement}</span>
-                    </div>
+                    
                   </div>
                 </div>
                 <div className="details-section">
@@ -1136,16 +1335,38 @@ export function ReservationsSport() {
                   try {
                     const paymentUpdates = selectedReservation.participantsList?.map((p: any, idx: number) => ({
                       participantId: p.id,
-                      paid: document.querySelector(`input[data-participant="${idx}"]`)?.checked || p.paid
+                      paid: (document.querySelector(`input[data-participant="${idx}"]`) as HTMLInputElement)?.checked || p.paid
                     }))
                     
-                    const response = await apiService.updatePaymentStatus(selectedReservation.id, {
-                      payments: paymentUpdates,
-                      notes: paymentNotes
-                    })
+                    // Calculer le statut de paiement global
+                    const totalPaid = paymentUpdates?.filter(p => p.paid).length || 0
+                    const totalParticipants = selectedReservation.participantsList?.length || 0
+                    const paymentStatus = totalPaid === totalParticipants ? 'Payé' : 
+                                         totalPaid > 0 ? 'Partiel' : 'En attente'
+                    
+                    const response = await apiService.updatePaymentStatus(selectedReservation.id, paymentStatus, paymentNotes)
                     
                     if (response.success) {
-                      await loadReservations()
+                      // Mettre à jour localement les données de paiement au lieu de recharger tout
+                      const updatedPayments = paymentUpdates || []
+                      const totalPaid = updatedPayments.filter(p => p.paid).length
+                      const totalAmount = selectedReservation.participantsList?.length * 100 || 0
+                      const paidAmount = totalPaid * 100
+                      
+                      setReservations(prev => 
+                        prev.map(res => res.id === selectedReservation.id ? {
+                          ...res,
+                          paymentStatus: paidAmount === totalAmount ? 'Payé' : 
+                                        paidAmount > 0 ? 'Partiel' : 'En attente',
+                          paidAmount: paidAmount,
+                          totalAmount: totalAmount,
+                          participantsList: res.participantsList?.map((p: any, idx: number) => ({
+                            ...p,
+                            paid: updatedPayments[idx]?.paid || p.paid
+                          }))
+                        } : res)
+                      )
+                      
                       alert("Paiements mis à jour avec succès")
                       setShowPaymentModal(false)
                     } else {
@@ -1164,150 +1385,7 @@ export function ReservationsSport() {
         </div>
       )}
 
-      {/* Modal Édition Réservation */}
-      {showEditModal && selectedReservation && (
-        <div className="modal-overlay">
-          <div className="modal-container modal-large">
-            <div className="modal-header">
-              <div className="modal-title-wrapper">
-                <div className="modal-icon">
-                  <Edit size={24} />
-                </div>
-                <div>
-                  <h3 className="modal-title">Modifier la Réservation</h3>
-                  <p className="modal-subtitle">{selectedReservation.user}</p>
-                </div>
-              </div>
-              <button className="modal-close" onClick={() => setShowEditModal(false)}>
-                <X size={24} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="form-grid">
-                <div className="form-group">
-                  <label className="form-label">Nom complet *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.user}
-                    onChange={(e) => setEditForm({ ...editForm, user: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Email *</label>
-                  <input
-                    type="email"
-                    className="form-input"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Salle *</label>
-                  <select
-                    className="form-select"
-                    value={editForm.salle}
-                    onChange={(e) => setEditForm({ ...editForm, salle: e.target.value })}
-                  >
-                    <option value="">Sélectionner une salle</option>
-                    <option value="C001-1">C001-1 - Adultes Musculation</option>
-                    <option value="C001-2">C001-2 - Enfants Musculation</option>
-                    <option value="C058-1">C058-1 - Adultes Gym</option>
-                    <option value="C058-2">C058-2 - Enfants Gym</option>
-                    <option value="C058-3">C058-3 - Adultes Gym & Swim</option>
-                    <option value="C058-4">C058-4 - Enfants Gym & Swim</option>
-                    <option value="C025-1">C025-1 - Adultes Fitness</option>
-                    <option value="C025-2">C025-2 - Enfants Fitness</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Activité *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.activite}
-                    onChange={(e) => setEditForm({ ...editForm, activite: e.target.value })}
-                    placeholder="Ex: Football, Volleyball, etc."
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Date *</label>
-                  <input
-                    type="date"
-                    className="form-input"
-                    value={editForm.date}
-                    onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Heure début *</label>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={editForm.heureDebut}
-                    onChange={(e) => setEditForm({ ...editForm, heureDebut: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Heure fin *</label>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={editForm.heureFin}
-                    onChange={(e) => setEditForm({ ...editForm, heureFin: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Nombre de participants *</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={editForm.participants}
-                    onChange={(e) => setEditForm({ ...editForm, participants: Number.parseInt(e.target.value) || 0 })}
-                    min="1"
-                    max="20"
-                  />
-                </div>
-                <div className="form-group form-group-full">
-                  <label className="form-label">Équipement nécessaire</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.equipement}
-                    onChange={(e) => setEditForm({ ...editForm, equipement: e.target.value })}
-                    placeholder="Ex: Ballons, chasubles, filets..."
-                  />
-                </div>
-                <div className="form-group form-group-full">
-                  <label className="form-label">Commentaire</label>
-                  <textarea
-                    className="form-textarea"
-                    rows={3}
-                    value={editForm.commentaire}
-                    onChange={(e) => setEditForm({ ...editForm, commentaire: e.target.value })}
-                    placeholder="Informations supplémentaires..."
-                  />
-                </div>
-              </div>
-              <div className="alert-info">
-                <strong>Note :</strong> Les modifications seront soumises à validation administrative.
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-modal btn-secondary" onClick={() => setShowEditModal(false)}>
-                Annuler
-              </button>
-              <button
-                className="btn-modal btn-primary"
-                onClick={handleEditReservation}
-                disabled={!editForm.user || !editForm.email || !editForm.salle || !editForm.activite || !editForm.date}
-              >
-                Sauvegarder
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+     
 
       {/* Modal Nouvelle Réservation Sport */}
       {showNewReservationModal && (
@@ -1470,12 +1548,12 @@ export function ReservationsSport() {
                             <label className="form-label">CNE *</label>
                             <input
                               type="text"
-                              className={`form-input ${showValidationErrors && validationErrors.cne ? 'error' : ''}`}
+                              className={`form-input ${showValidationErrors && validationErrors.self_cne ? 'error' : ''}`}
                               value={selfInfo.cne}
                               onChange={(e) => setSelfInfo({ ...selfInfo, cne: e.target.value })}
                             />
-                            {showValidationErrors && validationErrors.cne && (
-                              <div className="error-message">{validationErrors.cne}</div>
+                            {showValidationErrors && validationErrors.self_cne && (
+                              <div className="error-message">{validationErrors.self_cne}</div>
                             )}
                           </div>
                           <div className="form-group">
@@ -1484,36 +1562,37 @@ export function ReservationsSport() {
                             </label>
                             <input
                               type="text"
-                              className={`form-input ${showValidationErrors && validationErrors.matricule ? 'error' : ''}`}
+                              className={`form-input ${showValidationErrors && validationErrors.self_matricule ? 'error' : ''}`}
                               value={selfInfo.matricule}
                               onChange={(e) => setSelfInfo({ ...selfInfo, matricule: e.target.value })}
                             />
-                            {showValidationErrors && validationErrors.matricule && (
-                              <div className="error-message">{validationErrors.matricule}</div>
+                            {showValidationErrors && validationErrors.self_matricule && (
+                              <div className="error-message">{validationErrors.self_matricule}</div>
                             )}
                           </div>
                           <div className="form-group">
                             <label className="form-label">Email *</label>
                             <input
                               type="email"
-                              className={`form-input ${showValidationErrors && validationErrors.email ? 'error' : ''}`}
+                              className={`form-input ${showValidationErrors && validationErrors.self_email ? 'error' : ''}`}
                               value={selfInfo.email}
                               onChange={(e) => setSelfInfo({ ...selfInfo, email: e.target.value })}
                             />
-                            {showValidationErrors && validationErrors.email && (
-                              <div className="error-message">{validationErrors.email}</div>
+                            {showValidationErrors && validationErrors.self_email && (
+                              <div className="error-message">{validationErrors.self_email}</div>
                             )}
                           </div>
                           <div className="form-group">
                             <label className="form-label">Téléphone</label>
                             <input
                               type="tel"
-                              className={`form-input ${showValidationErrors && validationErrors.telephone ? 'error' : ''}`}
+                              className={`form-input ${showValidationErrors && validationErrors.self_telephone ? 'error' : ''}`}
                               value={selfInfo.telephone}
                               onChange={(e) => setSelfInfo({ ...selfInfo, telephone: e.target.value })}
+                              placeholder="+212xxxxxxxxx"
                             />
-                            {showValidationErrors && validationErrors.telephone && (
-                              <div className="error-message">{validationErrors.telephone}</div>
+                            {showValidationErrors && validationErrors.self_telephone && (
+                              <div className="error-message">{validationErrors.self_telephone}</div>
                             )}
                           </div>
                           <div className="form-group form-group-full">
@@ -1544,6 +1623,117 @@ export function ReservationsSport() {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Section Informations du Titulaire - Affiché seulement si l'admin ne se réserve pas lui-même */}
+                  {!reserveForSelf && (addSpouses || addChildren || addAdultChildren) && (
+                    <div className="info-card">
+                      <div className="info-card-header">
+                        <h5 className="info-card-title">Informations du Titulaire</h5>
+                        <p className="info-card-subtitle">
+                          Ces informations apparaîtront dans le tableau des réservations
+                        </p>
+                      </div>
+                      <div className="info-card-body">
+                        <div className="user-type-selection">
+                          <h6 className="selection-title">Type de titulaire:</h6>
+                          <div className="radio-group">
+                            <label className="radio-option">
+                              <input
+                                type="radio"
+                                name="titulaireType"
+                                value="collaborateur"
+                                checked={titulaireInfo.type === "collaborateur"}
+                                onChange={(e) => setTitulaireInfo({ ...titulaireInfo, type: e.target.value as "collaborateur" | "retraite" })}
+                              />
+                              <span className="radio-label">Collaborateur</span>
+                            </label>
+                            <label className="radio-option">
+                              <input
+                                type="radio"
+                                name="titulaireType"
+                                value="retraite"
+                                checked={titulaireInfo.type === "retraite"}
+                                onChange={(e) => setTitulaireInfo({ ...titulaireInfo, type: e.target.value as "collaborateur" | "retraite" })}
+                              />
+                              <span className="radio-label">Retraité</span>
+                            </label>
+                          </div>
+                        </div>
+                        <div className="form-grid">
+                          <div className="form-group">
+                            <label className="form-label">Nom *</label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              value={titulaireInfo.nom}
+                              onChange={(e) => setTitulaireInfo({ ...titulaireInfo, nom: e.target.value })}
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Prénom *</label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              value={titulaireInfo.prenom}
+                              onChange={(e) => setTitulaireInfo({ ...titulaireInfo, prenom: e.target.value })}
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">CNE *</label>
+                            <input
+                              type="text"
+                              className={`form-input ${validationErrors.titulaire_cne ? 'error' : ''}`}
+                              value={titulaireInfo.cne}
+                              onChange={(e) => setTitulaireInfo({ ...titulaireInfo, cne: e.target.value })}
+                            />
+                            {validationErrors.titulaire_cne && (
+                              <div className="error-message">{validationErrors.titulaire_cne}</div>
+                            )}
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">
+                              {titulaireInfo.type === "retraite" ? "Numéro RCAR *" : "Matricule *"}
+                            </label>
+                            <input
+                              type="text"
+                              className={`form-input ${validationErrors.titulaire_matricule ? 'error' : ''}`}
+                              value={titulaireInfo.matricule}
+                              onChange={(e) => setTitulaireInfo({ ...titulaireInfo, matricule: e.target.value })}
+                            />
+                            {validationErrors.titulaire_matricule && (
+                              <div className="error-message">{validationErrors.titulaire_matricule}</div>
+                            )}
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Email *</label>
+                            <input
+                              type="email"
+                              className={`form-input ${validationErrors.titulaire_email ? 'error' : ''}`}
+                              value={titulaireInfo.email}
+                              onChange={(e) => setTitulaireInfo({ ...titulaireInfo, email: e.target.value })}
+                            />
+                            {validationErrors.titulaire_email && (
+                              <div className="error-message">{validationErrors.titulaire_email}</div>
+                            )}
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Téléphone</label>
+                            <input
+                              type="tel"
+                              className={`form-input ${validationErrors.titulaire_telephone ? 'error' : ''}`}
+                              value={titulaireInfo.telephone}
+                              onChange={(e) => setTitulaireInfo({ ...titulaireInfo, telephone: e.target.value })}
+                              placeholder="+212xxxxxxxxx"
+                            />
+                            {validationErrors.titulaire_telephone && (
+                              <div className="error-message">{validationErrors.titulaire_telephone}</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {addSpouses && (
                     <div className="info-card">
                       <div className="info-card-header">
@@ -1969,7 +2159,27 @@ export function ReservationsSport() {
                     if (step === 1) {
                       // Show validation errors and check if fields are valid
                       setShowValidationErrors(true)
-                      if (!validateFields()) {
+                      
+                      // Validate based on current selections
+                      let hasErrors = false
+                      
+                      if (reserveForSelf) {
+                        const selfErrors = validatePersonInfo(selfInfo, userType === "retraite", "self_")
+                        if (Object.keys(selfErrors).length > 0) {
+                          setValidationErrors(prev => ({ ...prev, ...selfErrors }))
+                          hasErrors = true
+                        }
+                      }
+                      
+                      if (!reserveForSelf && (addSpouses || addChildren || addAdultChildren)) {
+                        const titulaireErrors = validatePersonInfo(titulaireInfo, titulaireInfo.type === "retraite", "titulaire_")
+                        if (Object.keys(titulaireErrors).length > 0) {
+                          setValidationErrors(prev => ({ ...prev, ...titulaireErrors }))
+                          hasErrors = true
+                        }
+                      }
+                      
+                      if (hasErrors) {
                         return // Don't proceed if validation fails
                       }
                     }
@@ -1996,7 +2206,7 @@ export function ReservationsSport() {
       )}
 
       {/* Styles CSS avec thème vert de la piscine */}
-      <style jsx>{`
+      <style>{`
         .reservations-sport-container {
           padding: 24px;
           background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
@@ -2267,7 +2477,7 @@ export function ReservationsSport() {
           color: white;
         }
 
-        /* Advanced Filters */
+       /* Advanced Filters */
         .advanced-filters {
           background: white;
           border-radius: 12px;

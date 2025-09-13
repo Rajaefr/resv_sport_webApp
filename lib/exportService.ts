@@ -80,37 +80,51 @@ export class ExportService {
    */
   static async exportSportReservationsToExcel() {
     try {
-      const response = await apiService.getSportReservations({ page: 1, limit: 1000 });
+      console.log('Début de l\'export des réservations sport...');
       
-      if (!response.success || !response.data?.reservations) {
-        throw new Error('Erreur lors de la récupération des réservations sport');
+      // Utiliser le nouvel endpoint d'export
+      const response = await apiService.request('GET', '/reservations/sport/export');
+      
+      console.log('Réponse de l\'API d\'export:', response);
+      
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Erreur lors de la récupération des données d\'export');
       }
 
-      const reservations = response.data.reservations.map((reservation: any) => ({
-        'ID Réservation': reservation.id || '',
-        'Utilisateur': `${reservation.user?.firstName || ''} ${reservation.user?.lastName || ''}`,
-        'Email': reservation.user?.email || '',
-        'Matricule': reservation.user?.matricule || '',
-        'Activité': reservation.activite || '',
-        'Salle': reservation.salle || '',
-        'Date': reservation.date ? new Date(reservation.date).toLocaleDateString('fr-FR') : '',
-        'Heure début': reservation.heureDebut || '',
-        'Heure fin': reservation.heureFin || '',
-        'Participants': reservation.participants || 0,
-        'Statut': reservation.status || '',
-        'Montant total (DH)': reservation.totalAmount || 0,
-        'Montant payé (DH)': reservation.paidAmount || 0,
-        'Statut paiement': reservation.paymentStatus || '',
-        'Équipement': reservation.equipement || '',
-        'Commentaire': reservation.commentaire || '',
-        'Date de création': reservation.createdAt ? new Date(reservation.createdAt).toLocaleDateString('fr-FR') : ''
-      }));
+      const reservations = response.data;
+      
+      if (!Array.isArray(reservations)) {
+        throw new Error('Format de données d\'export invalide');
+      }
+      
+      if (reservations.length === 0) {
+        console.warn('Aucune réservation à exporter');
+        return { success: false, message: 'Aucune réservation à exporter' };
+      }
 
+      console.log(`Préparation de l'export de ${reservations.length} réservations...`);
+      
+      // Utiliser directement les données formatées du backend
       this.downloadExcel(reservations, 'reservations_sport_ocp');
-      return { success: true, message: 'Export Excel des réservations sport réussi' };
+      
+      return { 
+        success: true, 
+        message: 'Export Excel des réservations sport réussi',
+        count: reservations.length
+      };
+      
     } catch (error) {
-      console.error('Erreur export réservations sport:', error);
-      return { success: false, message: 'Erreur lors de l\'export des réservations sport' };
+      console.error('Erreur détaillée lors de l\'export des réservations sport:', {
+        error,
+        message: error instanceof Error ? error.message : 'Erreur inconnue',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Erreur lors de l\'export des réservations sport',
+        error: error instanceof Error ? error.toString() : 'Erreur inconnue'
+      };
     }
   }
 
@@ -277,22 +291,56 @@ export class ExportService {
   /**
    * Télécharger un fichier Excel
    */
-  private static downloadExcel(data: any[], fileName: string) {
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    
-    // Ajuster la largeur des colonnes
-    const colWidths = Object.keys(data[0] || {}).map(key => ({
-      wch: Math.max(key.length, 15)
-    }));
-    ws['!cols'] = colWidths;
+  static downloadExcel(data: any[], fileName: string) {
+    try {
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        throw new Error('Aucune donnée valide fournie pour l\'export Excel');
+      }
 
-    XLSX.utils.book_append_sheet(wb, ws, 'Données');
-    
-    const timestamp = new Date().toISOString().split('T')[0];
-    const fullFileName = `${fileName}_${timestamp}.xlsx`;
-    
-    XLSX.writeFile(wb, fullFileName);
+      console.log(`Génération du fichier Excel avec ${data.length} entrées...`);
+      
+      // Créer un nouveau classeur
+      const wb = XLSX.utils.book_new();
+      
+      // Convertir les données en feuille de calcul
+      const ws = XLSX.utils.json_to_sheet(data);
+      
+      // Ajouter la feuille de calcul au classeur
+      XLSX.utils.book_append_sheet(wb, ws, 'Réservations');
+      
+      // Générer le fichier Excel
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      
+      // Créer un blob à partir du buffer
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      // Créer un objet URL pour le blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Créer un élément <a> pour le téléchargement
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      // Déclencher le téléchargement
+      document.body.appendChild(a);
+      a.click();
+      
+      // Nettoyer
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      console.log('Téléchargement du fichier Excel réussi');
+      
+    } catch (error) {
+      console.error('Erreur lors de la génération du fichier Excel:', {
+        error,
+        message: error instanceof Error ? error.message : 'Erreur inconnue',
+        dataLength: data?.length,
+        fileName
+      });
+      throw new Error(`Échec de la génération du fichier Excel: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   /**
@@ -345,6 +393,47 @@ export class ExportService {
   static generateFileName(baseName: string, extension: 'xlsx' | 'pdf' = 'xlsx'): string {
     const timestamp = new Date().toISOString().split('T')[0];
     return `${baseName}_${timestamp}.${extension}`;
+  }
+
+
+  static async exportPiscineReservationsToExcel() {
+    try {
+      const response = await apiService.request('GET', '/reservations/piscine/export');
+      
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Erreur lors de la récupération des données');
+      }
+  
+      const reservations = response.data;
+      
+      if (!Array.isArray(reservations)) {
+        throw new Error('Format de données invalide');
+      }
+      
+      if (reservations.length === 0) {
+        return { 
+          success: false, 
+          message: 'Aucune réservation à exporter',
+          count: 0
+        };
+      }
+  
+      this.downloadExcel(reservations, 'reservations_piscine_ocp');
+      
+      return { 
+        success: true, 
+        message: 'Export réussi',
+        count: reservations.length
+      };
+      
+    } catch (error) {
+      console.error('Erreur export piscine:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Erreur inconnue',
+        error: error instanceof Error ? error.toString() : 'Erreur inconnue'
+      };
+    }
   }
 }
 
