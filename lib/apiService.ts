@@ -28,7 +28,7 @@ class ApiService {
   private timeout: number;
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
     this.timeout = 30000; // Increased from 10000ms
   }
 
@@ -78,7 +78,7 @@ class ApiService {
       };
     }
 
-    // Mode test avec token admin de test
+    // ENABLED: Mode test avec token admin de test - Using simulated data for development
     if (token && token.startsWith('test-admin-token-')) {
       console.log(`🧪 Mode test - Simulation API ${method.toUpperCase()} ${endpoint}`);
       return this.simulateApiResponse<T>(method, endpoint, data, params);

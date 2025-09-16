@@ -325,5 +325,20 @@
     "id": "user_1757989705281",
     "createdAt": "2025-09-16T02:28:25.281Z",
     "updatedAt": "2025-09-16T02:28:25.281Z"
+  },
+  {
+    "firstName": "ani",
+    "lastName": "ani",
+    "email": "ani@gmail.com",
+    "username": "ani.ani",
+    "password": "123456789",
+    "department": "IT",
+    "matricule": "12345",
+    "telephone": "+212687953429",
+    "employeeId": "",
+    "role": "consulteur",
+    "id": "user_1757990003012",
+    "createdAt": "2025-09-16T02:33:23.012Z",
+    "updatedAt": "2025-09-16T02:33:23.012Z"
   }
 ]
