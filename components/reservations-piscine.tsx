@@ -3,6 +3,7 @@ import { useState } from "react"
 import {
   Search,
   Filter,
+  Download,
   Plus,
   Eye,
   Edit,
@@ -19,24 +20,23 @@ import {
   Baby,
   ChevronDown,
   X,
-  Download,
-  Loader2
 } from "lucide-react"
-import ExportService from '@/lib/exportService'
-import { toast } from 'react-hot-toast'
 
 const reservationsPiscine = [
   {
     id: "P001",
-    user: "Ahmed Maaroufi",
+    user: "Ahmed Benali",
     userType: "Collaborateur",
     matricule: "12345A",
     email: "ahmed.benali@ocp.ma",
-    date: "2025-08-15",
+    groupe: "A1-1",
+    bassin: "Grand Bassin",
+    date: "2024-01-15",
     heureDebut: "14:00",
+    heureFin: "15:00",
     participants: 4,
     status: "acceptee",
-    dateCreation: "2025-07-10",
+    dateCreation: "2024-01-10",
     commentaire: "Réservation pour famille",
     participantsList: [
       { nom: "Ahmed", prenom: "Benali", type: "Collaborateur", groupe: "A1-1" },
@@ -47,50 +47,62 @@ const reservationsPiscine = [
   },
   {
     id: "P002",
-    user: "Fatima Zahra Reda",
+    user: "Fatima Zahra Alami",
     userType: "Collaboratrice",
     matricule: "67890B",
     email: "fatima.zahra@ocp.ma",
-    date: "2025-07-15",
-    heureCreation: "16:00",
+    groupe: "A1-2",
+    bassin: "Petit Bassin",
+    date: "2024-01-15",
+    heureDebut: "16:00",
+    heureFin: "17:00",
     participants: 1,
     status: "en_attente",
-    dateCreation: "2025-07-12",
-    participantsList: [{ nom: "Fatima Zahra", prenom: "Reda", type: "Collaboratrice", groupe: "A1-2" }],
+    dateCreation: "2024-01-12",
+    commentaire: "Séance aquagym",
+    participantsList: [{ nom: "Fatima Zahra", prenom: "Alami", type: "Collaboratrice", groupe: "A1-2" }],
   },
   {
     id: "P003",
-    user: "Mohamed reda",
+    user: "Mohamed Alami",
     userType: "Retraité",
     matricule: "54321C",
-    email: "mohamed.reda@ocp.ma",
-    date: "2025-07-16",
-    heureCreation: "10:00",
+    email: "mohamed.alami@ocp.ma",
+    groupe: "A2-1",
+    bassin: "Grand Bassin",
+    date: "2024-01-16",
+    heureDebut: "10:00",
+    heureFin: "11:30",
     participants: 5,
     status: "refusee",
-    dateCreation: "2025-07-11",
+    dateCreation: "2024-01-11",
+    commentaire: "Formation plongée débutant",
     participantsList: [
-      { nom: "Mohamed", prenom: "Reda", type: "Retraité", groupe: "A2-1" },
-      { nom: "Khadija", prenom: "Reda", type: "Conjoint", groupe: "A2-1" },
-      { nom: "Yassine", prenom: "Reda", type: "Enfant", age: 10, groupe: "A2-2" },
-      { nom: "Salma", prenom: "Reda", type: "Enfant", age: 14, groupe: "A2-2" },
-      { nom: "Ali", prenom: "Reda", type: "Enfant", age: 16, groupe: "A2-2" },
+      { nom: "Mohamed", prenom: "Alami", type: "Retraité", groupe: "A2-1" },
+      { nom: "Khadija", prenom: "Alami", type: "Conjoint", groupe: "A2-1" },
+      { nom: "Yassine", prenom: "Alami", type: "Enfant", age: 10, groupe: "A2-2" },
+      { nom: "Salma", prenom: "Alami", type: "Enfant", age: 14, groupe: "A2-2" },
+      { nom: "Ali", prenom: "Alami", type: "Enfant", age: 16, groupe: "A2-2" },
     ],
   },
   {
     id: "P004",
-    user: "Khadija Riad",
+    user: "Khadija Mansouri",
     userType: "Retraitée",
     matricule: "98765D",
-    email: "khadija.Riad@ocp.ma",
-    date: "2025-07-16",
-    heureCreation: "18:00",
+    email: "khadija.mansouri@ocp.ma",
+    groupe: "A2-2",
+    bassin: "Petit Bassin",
+    date: "2024-01-16",
+    heureDebut: "18:00",
+    heureFin: "19:00",
     participants: 2,
     status: "en_attente",
-    dateCreation: "2025-07-13",
+    dateCreation: "2024-01-13",
+    commentaire: "Natation libre",
     participantsList: [
-      { nom: "Khadija", prenom: "Riad", type: "Retraitée", groupe: "A2-2" },
-      { nom: "Abdellah", prenom: "Riad", type: "Conjoint", groupe: "A2-2" },
+      { nom: "Khadija", prenom: "Mansouri", type: "Retraitée", groupe: "A2-2" },
+      { nom: "Abdellah", prenom: "Mansouri", type: "Conjoint", groupe: "A2-2" },
     ],
   },
   {
@@ -99,11 +111,15 @@ const reservationsPiscine = [
     userType: "Collaborateur",
     matricule: "11223E",
     email: "youssef.idrissi@ocp.ma",
-    date: "2025-08-17",
-    heureCreation: "08:00",
+    groupe: "A1-3",
+    bassin: "Grand Bassin",
+    date: "2024-01-17",
+    heureDebut: "08:00",
+    heureFin: "09:00",
     participants: 4,
     status: "acceptee",
-    dateCreation: "2025-08-14",
+    dateCreation: "2024-01-14",
+    commentaire: "Entraînement matinal",
     participantsList: [
       { nom: "Youssef", prenom: "Idrissi", type: "Collaborateur", groupe: "A1-3" },
       { nom: "Leila", prenom: "Idrissi", type: "Conjoint", groupe: "A1-3" },
@@ -121,17 +137,6 @@ const groupes = [
   { id: "A2-1", nom: "Groupe A2-1 - Retraités", bassin: "Grand Bassin", capacite: 15, membres: 14, type: "adulte" },
   { id: "A2-2", nom: "Groupe A2-2 - Mixte", bassin: "Petit Bassin", capacite: 10, membres: 6, type: "mixte" },
 ]
-
-// Simulation des données de l'utilisateur connecté (admin)
-const currentUser = {
-  id: "ADMIN001",
-  nom: "Benali",
-  prenom: "Ahmed",
-  matricule: "ADMIN001",
-  email: "ahmed.admin@ocp.ma",
-  type: "Admin",
-  telephone: "+212 6 12 34 56 78"
-}
 
 const getStatusBadge = (status: string) => {
   const statusConfig = {
@@ -156,6 +161,7 @@ const getStatusBadge = (status: string) => {
   const Icon = config.icon
   return (
     <span className={`status-badge ${config.className}`}>
+     
       <span>{config.label}</span>
     </span>
   )
@@ -178,7 +184,6 @@ const getParticipantIcon = (type: string) => {
 }
 
 export function ReservationsPiscine() {
-  const [isExporting, setIsExporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("")
@@ -192,28 +197,12 @@ export function ReservationsPiscine() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 8
 
-  // État pour les réservations (maintenant modifiable)
-  const [reservations, setReservations] = useState(reservationsPiscine)
-
   // Formulaire nouvelle réservation
   const [step, setStep] = useState(0)
   const [reserveForSelf, setReserveForSelf] = useState(false)
   const [addSpouses, setAddSpouses] = useState(false)
   const [addChildren, setAddChildren] = useState(false)
   const [userType, setUserType] = useState<"collaborateur" | "retraite">("collaborateur")
-  
-  // Informations du titulaire (celui qui apparaîtra sur le tableau)
-  const [titulaireInfo, setTitulaireInfo] = useState({
-    nom: "",
-    prenom: "",
-    cne: "",
-    matricule: "",
-    email: "",
-    telephone: "",
-    type: "collaborateur" as "collaborateur" | "retraite"
-  })
-  
-  // Informations des participants
   const [selfInfo, setSelfInfo] = useState({
     nom: "",
     prenom: "",
@@ -227,99 +216,27 @@ export function ReservationsPiscine() {
   const [editForm, setEditForm] = useState({
     user: "",
     email: "",
+    groupe: "",
+    bassin: "",
     date: "",
-    heureCreation: "",
+    heureDebut: "",
+    heureFin: "",
     participants: 0,
+    commentaire: "",
   })
 
   // État pour la gestion des groupes par participant
   const [participantGroups, setParticipantGroups] = useState<{ [key: string]: string }>({})
 
-  // États pour les erreurs de validation
-  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({})
-
-  // Fonctions de validation
-  const validateMatricule = (matricule: string, isRetraite: boolean = false) => {
-    if (isRetraite) {
-      // Pour RCAR : minimum 5 caractères
-      if (matricule.length < 5) {
-        return "Le numéro RCAR doit contenir au moins 5 caractères"
-      }
-    } else {
-      // Pour matricule : entre 3 et 5 caractères
-      if (matricule.length < 3 || matricule.length > 5) {
-        return "Le matricule doit contenir entre 3 et 5 caractères"
-      }
-    }
-    return ""
-  }
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return "Format d'email invalide"
-    }
-    return ""
-  }
-
-  const validateTelephone = (telephone: string) => {
-    // Format marocain : +212xxxxxxxxx (10 chiffres après +212)
-    const phoneRegex = /^\+212[0-9]{9}$/
-    if (!phoneRegex.test(telephone)) {
-      return "Le téléphone doit être au format +212xxxxxxxxx (9 chiffres après +212)"
-    }
-    return ""
-  }
-
-  const validateCNE = (cne: string) => {
-    if (cne.length !== 6) {
-      return "Le CNE doit contenir exactement 6 caractères"
-    }
-    return ""
-  }
-
-  // Fonction pour valider un objet d'informations
-  const validatePersonInfo = (info: any, isRetraite: boolean = false, prefix: string = "") => {
-    const errors: { [key: string]: string } = {}
-    
-    if (info.matricule) {
-      const matriculeError = validateMatricule(info.matricule, isRetraite)
-      if (matriculeError) {
-        errors[`${prefix}matricule`] = matriculeError
-      }
-    }
-    
-    if (info.email) {
-      const emailError = validateEmail(info.email)
-      if (emailError) {
-        errors[`${prefix}email`] = emailError
-      }
-    }
-    
-    if (info.telephone) {
-      const telephoneError = validateTelephone(info.telephone)
-      if (telephoneError) {
-        errors[`${prefix}telephone`] = telephoneError
-      }
-    }
-    
-    if (info.cne) {
-      const cneError = validateCNE(info.cne)
-      if (cneError) {
-        errors[`${prefix}cne`] = cneError
-      }
-    }
-    
-    return errors
-  }
-
-  const filteredReservations = reservations.filter((reservation) => {
+  const filteredReservations = reservationsPiscine.filter((reservation) => {
     const matchesSearch =
       reservation.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.matricule.toLowerCase().includes(searchTerm.toLowerCase())
+      reservation.matricule.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reservation.groupe.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || reservation.status === statusFilter
     const matchesDate = !dateFilter || reservation.date === dateFilter
-    return matchesSearch && matchesStatus && matchesDate
+    const matchesGroupe = !groupeFilter || reservation.groupe.toLowerCase().includes(groupeFilter.toLowerCase())
+    return matchesSearch && matchesStatus && matchesDate && matchesGroupe
   })
 
   // Pagination
@@ -336,13 +253,24 @@ export function ReservationsPiscine() {
 
   const handleDeleteReservation = (id: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette réservation ?")) {
-      setReservations(reservations.filter(res => res.id !== id))
+      console.log("Suppression de la réservation:", id)
       alert("Réservation supprimée avec succès")
     }
   }
 
   const openEditModal = (reservation: any) => {
     setSelectedReservation(reservation)
+    setEditForm({
+      user: reservation.user,
+      email: reservation.email,
+      groupe: reservation.groupe,
+      bassin: reservation.bassin,
+      date: reservation.date,
+      heureDebut: reservation.heureDebut,
+      heureFin: reservation.heureFin,
+      participants: reservation.participants,
+      commentaire: reservation.commentaire,
+    })
     setShowEditModal(true)
   }
 
@@ -367,35 +295,6 @@ export function ReservationsPiscine() {
   }
 
   const handleGroupAssignment = () => {
-    if (!selectedReservation) return
-
-    // Mettre à jour la réservation sélectionnée avec les nouveaux groupes
-    const updatedParticipantsList = selectedReservation.participantsList.map((participant: any, index: number) => {
-      const groupKey = `${participant.type}-${index}`
-      const newGroup = participantGroups[groupKey]
-      
-      return {
-        ...participant,
-        groupe: newGroup || participant.groupe
-      }
-    })
-
-    // Créer une nouvelle réservation mise à jour
-    const updatedReservation = {
-      ...selectedReservation,
-      participantsList: updatedParticipantsList
-    }
-
-    // Mettre à jour l'état global des réservations
-    setReservations(prevReservations => 
-      prevReservations.map(reservation => 
-        reservation.id === selectedReservation.id ? updatedReservation : reservation
-      )
-    )
-
-    // Mettre à jour la réservation sélectionnée pour les détails
-    setSelectedReservation(updatedReservation)
-
     console.log("Affectation aux groupes:", participantGroups)
     alert("Affectation aux groupes mise à jour avec succès")
     setShowGroupModal(false)
@@ -422,260 +321,6 @@ export function ReservationsPiscine() {
     return actualAge > 6 && actualAge < 18
   }
 
-  // Fonction pour générer un nouvel ID de réservation
-  const generateNewReservationId = () => {
-    const maxId = Math.max(...reservations.map(r => parseInt(r.id.substring(1))))
-    return `P${String(maxId + 1).padStart(3, '0')}`
-  }
-
-  // Fonction pour déterminer qui est le titulaire
-  const getTitulaire = () => {
-    if (reserveForSelf) {
-      // Si l'admin se réserve lui-même, utiliser ses informations saisies dans le formulaire
-      return {
-        nom: selfInfo.nom,
-        prenom: selfInfo.prenom,
-        matricule: selfInfo.matricule,
-        email: selfInfo.email,
-        type: userType === "collaborateur" ? "Collaborateur" : "Retraité"
-      }
-    } else {
-      // Sinon, utiliser les informations du titulaire saisi
-      return {
-        nom: titulaireInfo.nom,
-        prenom: titulaireInfo.prenom,
-        matricule: titulaireInfo.matricule,
-        email: titulaireInfo.email,
-        type: titulaireInfo.type === "collaborateur" ? "Collaborateur" : "Retraité"
-      }
-    }
-  }
-
-  // Fonction pour soumettre une nouvelle réservation
-  const handleSubmitNewReservation = () => {
-    // Validation des données
-    if (!reserveForSelf && !addSpouses && !addChildren) {
-      alert("Veuillez sélectionner au moins un type de participant")
-      return
-    }
-
-    // Validation du titulaire si l'admin ne se réserve pas lui-même
-    if (!reserveForSelf && (!titulaireInfo.nom || !titulaireInfo.prenom || !titulaireInfo.matricule || !titulaireInfo.email)) {
-      alert("Veuillez remplir toutes les informations du titulaire")
-      return
-    }
-
-    // Validation des informations personnelles si l'admin se réserve lui-même
-    if (reserveForSelf && (!selfInfo.nom || !selfInfo.prenom || !selfInfo.matricule || !selfInfo.email)) {
-      alert("Veuillez remplir toutes vos informations personnelles")
-      return
-    }
-
-    // Validation des formats pour le titulaire
-    if (!reserveForSelf) {
-      const titulaireErrors = validatePersonInfo(titulaireInfo, titulaireInfo.type === "retraite", "titulaire_")
-      if (Object.keys(titulaireErrors).length > 0) {
-        const errorMessages = Object.values(titulaireErrors).join("\n")
-        alert(`Erreurs dans les informations du titulaire:\n${errorMessages}`)
-        setValidationErrors(prev => ({ ...prev, ...titulaireErrors }))
-        return
-      }
-    }
-
-    // Validation des formats pour les informations personnelles
-    if (reserveForSelf) {
-      const selfErrors = validatePersonInfo(selfInfo, userType === "retraite", "self_")
-      if (Object.keys(selfErrors).length > 0) {
-        const errorMessages = Object.values(selfErrors).join("\n")
-        alert(`Erreurs dans vos informations personnelles:\n${errorMessages}`)
-        setValidationErrors(prev => ({ ...prev, ...selfErrors }))
-        return
-      }
-    }
-
-    // Construction de la liste des participants
-    const participantsList = []
-    let totalParticipants = 0
-
-    // Ajouter l'utilisateur lui-même s'il est sélectionné
-    if (reserveForSelf && selfInfo.nom && selfInfo.prenom) {
-      participantsList.push({
-        nom: selfInfo.nom,
-        prenom: selfInfo.prenom,
-        type: userType === "collaborateur" ? "Collaborateur" : "Retraité",
-        groupe: "A1-1" // Groupe par défaut, peut être modifié après
-      })
-      totalParticipants++
-    }
-
-    // Ajouter les conjoints
-    if (addSpouses) {
-      spouses.forEach(spouse => {
-        if (spouse.nom && spouse.prenom) {
-          participantsList.push({
-            nom: spouse.nom,
-            prenom: spouse.prenom,
-            type: "Conjoint",
-            groupe: "A1-1" // Groupe par défaut
-          })
-          totalParticipants++
-        }
-      })
-    }
-
-    // Ajouter les enfants
-    if (addChildren && (reserveForSelf ? userType === "collaborateur" : titulaireInfo.type === "collaborateur")) {
-      children.forEach(child => {
-        if (child.nom && child.prenom && child.dateNaissance && isAgeBetween6And18(child.dateNaissance)) {
-          const today = new Date()
-          const birthDate = new Date(child.dateNaissance)
-          const age = today.getFullYear() - birthDate.getFullYear()
-          participantsList.push({
-            nom: child.nom,
-            prenom: child.prenom,
-            type: "Enfant",
-            age: age,
-            groupe: "A1-2" // Groupe par défaut pour enfants
-          })
-          totalParticipants++
-        }
-      })
-    }
-
-    if (totalParticipants === 0) {
-      alert("Aucun participant valide trouvé")
-      return
-    }
-
-    // Obtenir les informations du titulaire
-    const titulaire = getTitulaire()
-
-    // Création de la nouvelle réservation avec les données du titulaire
-    const now = new Date()
-    const newReservation = {
-      id: generateNewReservationId(),
-      user: `${titulaire.prenom} ${titulaire.nom}`, // Nom du titulaire
-      userType: titulaire.type,
-      matricule: titulaire.matricule,
-      email: titulaire.email,
-      date: now.toISOString().split('T')[0], // Date actuelle
-      heureDebut: now.toTimeString().split(' ')[0].substring(0, 5), // Heure actuelle
-      participants: totalParticipants,
-      status: "en_attente", // Statut par défaut
-      dateCreation: now.toISOString().split('T')[0], // Date de création automatique
-      commentaire: reserveForSelf 
-        ? `Réservation personnelle pour ${totalParticipants} participant(s)`
-        : `Réservation créée par l'admin pour le titulaire ${titulaire.prenom} ${titulaire.nom} - ${totalParticipants} participant(s)`,
-      participantsList: participantsList
-    }
-
-    // Ajouter la nouvelle réservation à la liste
-    setReservations([newReservation, ...reservations])
-
-    // Réinitialiser le formulaire
-    resetNewReservationForm()
-    setShowNewReservationModal(false)
-    
-    alert(`Nouvelle réservation créée avec succès! `)
-  }
-
-  // Fonction pour réinitialiser le formulaire
-  const resetNewReservationForm = () => {
-    setStep(0)
-    setReserveForSelf(false)
-    setAddSpouses(false)
-    setAddChildren(false)
-    setUserType("collaborateur")
-    setTitulaireInfo({
-      nom: "",
-      prenom: "",
-      cne: "",
-      matricule: "",
-      email: "",
-      telephone: "",
-      type: "collaborateur"
-    })
-    setSelfInfo({
-      nom: "",
-      prenom: "",
-      cne: "",
-      matricule: "",
-      email: "",
-      telephone: "",
-    })
-    setSpouses([{ nom: "", prenom: "", cne: "" }])
-    setChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M" }])
-  }
-
-  // Fonction pour passer à l'étape suivante
-  const handleNextStep = () => {
-    if (step === 0) {
-      // Validation de l'étape 0
-      if (!reserveForSelf && !addSpouses && !addChildren) {
-        alert("Veuillez sélectionner au moins un type de participant")
-        return
-      }
-      
-      // Si l'admin ne se réserve pas lui-même, aller à l'étape de saisie du titulaire
-      if (!reserveForSelf) {
-        setStep(1) // Étape titulaire
-      } else {
-        setStep(2) // Étape participants directement
-      }
-    } else if (step === 1) {
-      // Validation du titulaire
-      if (!titulaireInfo.nom || !titulaireInfo.prenom || !titulaireInfo.matricule || !titulaireInfo.email) {
-        alert("Veuillez remplir toutes les informations du titulaire")
-        return
-      }
-      
-      // Validation des formats pour le titulaire
-      const titulaireErrors = validatePersonInfo(titulaireInfo, titulaireInfo.type === "retraite", "titulaire_")
-      if (Object.keys(titulaireErrors).length > 0) {
-        const errorMessages = Object.values(titulaireErrors).join("\n")
-        alert(`Erreurs dans les informations du titulaire:\n${errorMessages}`)
-        setValidationErrors(prev => ({ ...prev, ...titulaireErrors }))
-        return
-      }
-      
-      setStep(2) // Étape participants
-    } else if (step === 2) {
-      // Validation des informations personnelles si l'admin se réserve lui-même
-      if (reserveForSelf) {
-        if (!selfInfo.nom || !selfInfo.prenom || !selfInfo.matricule || !selfInfo.email) {
-          alert("Veuillez remplir toutes vos informations personnelles")
-          return
-        }
-        
-        // Validation des formats pour les informations personnelles
-        const selfErrors = validatePersonInfo(selfInfo, userType === "retraite", "self_")
-        if (Object.keys(selfErrors).length > 0) {
-          const errorMessages = Object.values(selfErrors).join("\n")
-          alert(`Erreurs dans vos informations personnelles:\n${errorMessages}`)
-          setValidationErrors(prev => ({ ...prev, ...selfErrors }))
-          return
-        }
-      }
-      
-      setStep(3) // Étape récapitulatif
-    }
-  }
-
-  // Fonction pour revenir à l'étape précédente
-  const handlePreviousStep = () => {
-    if (step === 1) {
-      setStep(0)
-    } else if (step === 2) {
-      if (!reserveForSelf) {
-        setStep(1) // Retour à l'étape titulaire
-      } else {
-        setStep(0) // Retour à l'étape sélection
-      }
-    } else if (step === 3) {
-      setStep(2)
-    }
-  }
-
   return (
     <div className="reservations-piscine-container">
       {/* Header */}
@@ -693,14 +338,9 @@ export function ReservationsPiscine() {
             </div>
           </div>
           <div className="header-actions">
-            <button className="btn-header btn-secondary" onClick={handleExportReservations}
-      disabled={isExporting}>
-             {isExporting ? (
-        <Loader2 className="animate-spin" size={16} />
-      ) : (
-        <Download size={16} />
-      )}
-              <span>Exporter-Excel </span>
+            <button className="btn-header btn-secondary">
+              <Download size={18} />
+              <span>Exporter</span>
             </button>
             <button className="btn-header btn-primary" onClick={() => setShowNewReservationModal(true)}>
               <Plus size={18} />
@@ -727,7 +367,7 @@ export function ReservationsPiscine() {
             <CheckCircle size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{reservations.filter((r) => r.status === "acceptee").length}</div>
+            <div className="stat-value">{reservationsPiscine.filter((r) => r.status === "acceptee").length}</div>
             <div className="stat-label">Acceptées</div>
           </div>
           <div className="stat-trend">+5%</div>
@@ -737,7 +377,7 @@ export function ReservationsPiscine() {
             <Clock size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{reservations.filter((r) => r.status === "en_attente").length}</div>
+            <div className="stat-value">{reservationsPiscine.filter((r) => r.status === "en_attente").length}</div>
             <div className="stat-label">En Attente</div>
           </div>
           <div className="stat-trend">-2%</div>
@@ -747,7 +387,7 @@ export function ReservationsPiscine() {
             <Users size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">{reservations.reduce((sum, r) => sum + r.participants, 0)}</div>
+            <div className="stat-value">{reservationsPiscine.reduce((sum, r) => sum + r.participants, 0)}</div>
             <div className="stat-label">Participants</div>
           </div>
           <div className="stat-trend">+8%</div>
@@ -761,7 +401,7 @@ export function ReservationsPiscine() {
             <Search size={18} className="search-icon" />
             <input
               type="text"
-              placeholder="Rechercher par nom, matricule..."
+              placeholder="Rechercher par nom, matricule ou groupe..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -822,17 +462,23 @@ export function ReservationsPiscine() {
       <div className="table-container">
         <div className="table-header">
           <h3 className="table-title">Liste des Réservations</h3>
-          
+          <div className="table-actions">
+            <button className="btn-table-action">
+              <Download size={16} />
+            </button>
+          </div>
         </div>
         <div className="table-wrapper">
           <table className="reservations-table">
             <thead>
               <tr>
-                <th>Titulaire</th>
+                <th>Utilisateur</th>
                 <th>Type & Matricule</th>
+                <th>Groupe & Bassin</th>
                 <th>Date & Heure</th>
                 <th>Participants</th>
                 <th>Statut</th>
+                <th>Commentaire</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -856,22 +502,28 @@ export function ReservationsPiscine() {
                   <td>
                     <div className="type-cell">
                       <div className="type-badge">
-                        <UserCheck size={12} />
+                        <UserCheck size={14} />
                         <span>{reservation.userType}</span>
                       </div>
-                      <div className="matricule">{reservation.matricule}</div>
+                      <div className="matricule">#{reservation.matricule}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="location-cell">
+                      <div className="location-primary">{reservation.groupe}</div>
+                      <div className="location-secondary">{reservation.bassin}</div>
                     </div>
                   </td>
                   <td>
                     <div className="datetime-cell">
                       <div className="date-info">
-                        <Calendar size={12} />
+                        <Calendar size={14} />
                         <span>{reservation.date}</span>
                       </div>
                       <div className="time-info">
-                        <Clock size={12} />
+                        <Clock size={14} />
                         <span>
-                          {reservation.heureDebut || reservation.heureCreation} 
+                          {reservation.heureDebut} - {reservation.heureFin}
                         </span>
                       </div>
                     </div>
@@ -882,7 +534,10 @@ export function ReservationsPiscine() {
                       <span>{reservation.participants}</span>
                     </div>
                   </td>
-                  <td>{getStatusBadge(reservation.status)}</td>
+                  <td >{getStatusBadge(reservation.status)}</td>
+                  <td>
+                    <div className="comment-cell">{reservation.commentaire}</div>
+                  </td>
                   <td>
                     <div className="actions-cell">
                       <button
@@ -894,6 +549,13 @@ export function ReservationsPiscine() {
                         title="Voir détails"
                       >
                         <Eye size={16} />
+                      </button>
+                      <button
+                        className="action-btn action-edit"
+                        onClick={() => openEditModal(reservation)}
+                        title="Éditer"
+                      >
+                        <Edit size={16} />
                       </button>
                       <button
                         className="action-btn action-group"
@@ -966,746 +628,7 @@ export function ReservationsPiscine() {
         </div>
       </div>
 
-      {/* Modal Nouvelle Réservation */}
-      {showNewReservationModal && (
-        <div className="modal-overlay">
-          <div className="modal-container modal-large">
-            <div className="modal-header">
-              <div className="modal-title-wrapper">
-                <div className="modal-icon">
-                  <Plus size={24} />
-                </div>
-                <div>
-                  <h3 className="modal-title">Nouvelle Réservation Piscine</h3>
-                  <p className="modal-subtitle">
-                    Étape {step + 1} sur 4 - Admin: {currentUser.prenom} {currentUser.nom}
-                  </p>
-                </div>
-              </div>
-              <button className="modal-close" onClick={() => {
-                resetNewReservationForm()
-                setShowNewReservationModal(false)
-              }}>
-                <X size={24} />
-              </button>
-            </div>
-            <div className="modal-body">
-              {/* Étape 0 - Sélection des participants */}
-              {step === 0 && (
-                <div className="step-container">
-                  <div className="step-header">
-                    <h4 className="step-title">Sélection des participants</h4>
-                    <p className="step-description">Qui participera à cette réservation ?</p>
-                  </div>
-                  <div className="participants-selection-grid">
-                    <div className={`selection-card ${reserveForSelf ? "selected" : ""}`}>
-                      <label className="selection-card-label">
-                        <input
-                          type="checkbox"
-                          checked={reserveForSelf}
-                          onChange={(e) => setReserveForSelf(e.target.checked)}
-                          className="selection-checkbox"
-                        />
-                        <div className="selection-card-content">
-                          <User size={24} className="selection-icon" />
-                          <h6 className="selection-title">Moi-même</h6>
-                          <p className="selection-description">Je participe à cette réservation</p>
-                        </div>
-                      </label>
-                    </div>
-                    <div className={`selection-card ${addSpouses ? "selected" : ""}`}>
-                      <label className="selection-card-label">
-                        <input
-                          type="checkbox"
-                          checked={addSpouses}
-                          onChange={(e) => setAddSpouses(e.target.checked)}
-                          className="selection-checkbox"
-                        />
-                        <div className="selection-card-content">
-                          <Heart size={24} className="selection-icon" />
-                          <h6 className="selection-title">Conjoints</h6>
-                          <p className="selection-description">Maximum 2 conjoints</p>
-                        </div>
-                      </label>
-                    </div>
-                    <div className={`selection-card ${addChildren ? "selected" : ""}`}>
-                      <label className="selection-card-label">
-                        <input
-                          type="checkbox"
-                          checked={addChildren}
-                          onChange={(e) => setAddChildren(e.target.checked)}
-                          className="selection-checkbox"
-                        />
-                        <div className="selection-card-content">
-                          <Baby size={24} className="selection-icon" />
-                          <h6 className="selection-title">Enfants 6-18 ans</h6>
-                          <p className="selection-description">Maximum 5 enfants</p>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                  {!reserveForSelf && (addSpouses || addChildren) && (
-                    <div className="alert-info">
-                      <strong>Information:</strong> Vous créez une réservation pour des conjoints/enfants. 
-                      À l'étape suivante, vous devrez spécifier le titulaire (collaborateur/retraité) responsable de cette réservation.
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Étape 1 - Informations du titulaire (si admin ne se réserve pas lui-même) */}
-              {step === 1 && !reserveForSelf && (
-                <div className="step-container">
-                  <div className="step-header">
-                    <h4 className="step-title">Informations du titulaire</h4>
-                    <p className="step-description">Qui est le titulaire responsable de cette réservation ?</p>
-                  </div>
-                  <div className="alert-info">
-                    <strong>Important:</strong> Le titulaire est la personne (collaborateur/retraité) sous le nom de laquelle 
-                    la réservation apparaîtra dans le tableau. Cette personne est responsable de la réservation.
-                  </div>
-                  <div className="info-card">
-                    <div className="info-card-header">
-                      <h5 className="info-card-title">Informations du titulaire</h5>
-                    </div>
-                    <div className="info-card-body">
-                      <div className="user-type-selection">
-                        <h5 className="selection-title">Type de titulaire</h5>
-                        <div className="radio-group">
-                          <div className="radio-option">
-                            <input
-                              type="radio"
-                              id="titulaire-collaborateur"
-                              name="titulaireType"
-                              value="collaborateur"
-                              checked={titulaireInfo.type === "collaborateur"}
-                              onChange={(e) => setTitulaireInfo({...titulaireInfo, type: e.target.value as "collaborateur" | "retraite"})}
-                            />
-                            <label htmlFor="titulaire-collaborateur" className="radio-label">
-                              Collaborateur
-                            </label>
-                          </div>
-                          <div className="radio-option">
-                            <input
-                              type="radio"
-                              id="titulaire-retraite"
-                              name="titulaireType"
-                              value="retraite"
-                              checked={titulaireInfo.type === "retraite"}
-                              onChange={(e) => setTitulaireInfo({...titulaireInfo, type: e.target.value as "collaborateur" | "retraite"})}
-                            />
-                            <label htmlFor="titulaire-retraite" className="radio-label">
-                              Retraité
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="form-grid">
-                        <div className="form-group">
-                          <label className="form-label">Nom *</label>
-                          <input
-                            type="text"
-                            className="form-input"
-                            value={titulaireInfo.nom}
-                            onChange={(e) => setTitulaireInfo({ ...titulaireInfo, nom: e.target.value })}
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Prénom *</label>
-                          <input
-                            type="text"
-                            className="form-input"
-                            value={titulaireInfo.prenom}
-                            onChange={(e) => setTitulaireInfo({ ...titulaireInfo, prenom: e.target.value })}
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">CNE</label>
-                          <input
-                            type="text"
-                            className={`form-input ${validationErrors['titulaire_cne'] ? 'form-input-error' : ''}`}
-                            value={titulaireInfo.cne}
-                            onChange={(e) => {
-                              setTitulaireInfo({ ...titulaireInfo, cne: e.target.value })
-                              if (e.target.value) {
-                                const error = validateCNE(e.target.value)
-                                setValidationErrors(prev => ({
-                                  ...prev,
-                                  titulaire_cne: error
-                                }))
-                              } else {
-                                setValidationErrors(prev => {
-                                  const newErrors = { ...prev }
-                                  delete newErrors.titulaire_cne
-                                  return newErrors
-                                })
-                              }
-                            }}
-                          />
-                          {validationErrors['titulaire_cne'] && (
-                            <span className="error-message">{validationErrors['titulaire_cne']}</span>
-                          )}
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">
-                            {titulaireInfo.type === "retraite" ? "Numéro RCAR *" : "Matricule *"}
-                          </label>
-                          <input
-                            type="text"
-                            className={`form-input ${validationErrors['titulaire_matricule'] ? 'form-input-error' : ''}`}
-                            value={titulaireInfo.matricule}
-                            onChange={(e) => {
-                              setTitulaireInfo({ ...titulaireInfo, matricule: e.target.value })
-                              if (e.target.value) {
-                                const error = validateMatricule(e.target.value, titulaireInfo.type === "retraite")
-                                setValidationErrors(prev => ({
-                                  ...prev,
-                                  titulaire_matricule: error
-                                }))
-                              } else {
-                                setValidationErrors(prev => {
-                                  const newErrors = { ...prev }
-                                  delete newErrors.titulaire_matricule
-                                  return newErrors
-                                })
-                              }
-                            }}
-                          />
-                          {validationErrors['titulaire_matricule'] && (
-                            <span className="error-message">{validationErrors['titulaire_matricule']}</span>
-                          )}
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Email *</label>
-                          <input
-                            type="email"
-                            className={`form-input ${validationErrors['titulaire_email'] ? 'form-input-error' : ''}`}
-                            value={titulaireInfo.email}
-                            onChange={(e) => {
-                              setTitulaireInfo({ ...titulaireInfo, email: e.target.value })
-                              if (e.target.value) {
-                                const error = validateEmail(e.target.value)
-                                setValidationErrors(prev => ({
-                                  ...prev,
-                                  titulaire_email: error
-                                }))
-                              } else {
-                                setValidationErrors(prev => {
-                                  const newErrors = { ...prev }
-                                  delete newErrors.titulaire_email
-                                  return newErrors
-                                })
-                              }
-                            }}
-                          />
-                          {validationErrors['titulaire_email'] && (
-                            <span className="error-message">{validationErrors['titulaire_email']}</span>
-                          )}
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Téléphone</label>
-                          <input
-                            type="tel"
-                            className={`form-input ${validationErrors['titulaire_telephone'] ? 'form-input-error' : ''}`}
-                            value={titulaireInfo.telephone}
-                            onChange={(e) => {
-                              setTitulaireInfo({ ...titulaireInfo, telephone: e.target.value })
-                              if (e.target.value) {
-                                const error = validateTelephone(e.target.value)
-                                setValidationErrors(prev => ({
-                                  ...prev,
-                                  titulaire_telephone: error
-                                }))
-                              } else {
-                                setValidationErrors(prev => {
-                                  const newErrors = { ...prev }
-                                  delete newErrors.titulaire_telephone
-                                  return newErrors
-                                })
-                              }
-                            }}
-                          />
-                          {validationErrors['titulaire_telephone'] && (
-                            <span className="error-message">{validationErrors['titulaire_telephone']}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Étape 2 - Informations des participants */}
-              {step === 2 && (
-                <div className="step-container">
-                  <div className="step-header">
-                    <h4 className="step-title">Informations des participants</h4>
-                    <p className="step-description">Veuillez remplir les informations des participants</p>
-                  </div>
-                  {reserveForSelf && (
-                    <div className="info-card">
-                      <div className="info-card-header">
-                        <h5 className="info-card-title">Mes informations (Titulaire)</h5>
-                      </div>
-                      <div className="info-card-body">
-                        <div className="user-type-selection">
-                          <h5 className="selection-title">Mon type</h5>
-                          <div className="radio-group">
-                            <div className="radio-option">
-                              <input
-                                type="radio"
-                                id="collaborateur"
-                                name="userType"
-                                value="collaborateur"
-                                checked={userType === "collaborateur"}
-                                onChange={(e) => setUserType(e.target.value as "collaborateur" | "retraite")}
-                              />
-                              <label htmlFor="collaborateur" className="radio-label">
-                                Collaborateur
-                              </label>
-                            </div>
-                            <div className="radio-option">
-                              <input
-                                type="radio"
-                                id="retraite"
-                                name="userType"
-                                value="retraite"
-                                checked={userType === "retraite"}
-                                onChange={(e) => setUserType(e.target.value as "collaborateur" | "retraite")}
-                              />
-                              <label htmlFor="retraite" className="radio-label">
-                                Retraité
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="form-grid">
-                          <div className="form-group">
-                            <label className="form-label">Nom *</label>
-                            <input
-                              type="text"
-                              className="form-input"
-                              value={selfInfo.nom}
-                              onChange={(e) => setSelfInfo({ ...selfInfo, nom: e.target.value })}
-                            />
-                          </div>
-                          <div className="form-group">
-                            <label className="form-label">Prénom *</label>
-                            <input
-                              type="text"
-                              className="form-input"
-                              value={selfInfo.prenom}
-                              onChange={(e) => setSelfInfo({ ...selfInfo, prenom: e.target.value })}
-                            />
-                          </div>
-                          <div className="form-group">
-                            <label className="form-label">CNE</label>
-                            <input
-                              type="text"
-                              className={`form-input ${validationErrors['self_cne'] ? 'form-input-error' : ''}`}
-                              value={selfInfo.cne}
-                              onChange={(e) => {
-                                setSelfInfo({ ...selfInfo, cne: e.target.value })
-                                if (e.target.value) {
-                                  const error = validateCNE(e.target.value)
-                                  setValidationErrors(prev => ({
-                                    ...prev,
-                                    self_cne: error
-                                  }))
-                                } else {
-                                  setValidationErrors(prev => {
-                                    const newErrors = { ...prev }
-                                    delete newErrors.self_cne
-                                    return newErrors
-                                  })
-                                }
-                              }}
-                            />
-                            {validationErrors['self_cne'] && (
-                              <span className="error-message">{validationErrors['self_cne']}</span>
-                            )}
-                          </div>
-                          <div className="form-group">
-                            <label className="form-label">
-                              {userType === "retraite" ? "Numéro RCAR *" : "Matricule *"}
-                            </label>
-                            <input
-                              type="text"
-                              className={`form-input ${validationErrors['self_matricule'] ? 'form-input-error' : ''}`}
-                              value={selfInfo.matricule}
-                              onChange={(e) => {
-                                setSelfInfo({ ...selfInfo, matricule: e.target.value })
-                                if (e.target.value) {
-                                  const error = validateMatricule(e.target.value, userType === "retraite")
-                                  setValidationErrors(prev => ({
-                                    ...prev,
-                                    self_matricule: error
-                                  }))
-                                } else {
-                                  setValidationErrors(prev => {
-                                    const newErrors = { ...prev }
-                                    delete newErrors.self_matricule
-                                    return newErrors
-                                  })
-                                }
-                              }}
-                            />
-                            {validationErrors['self_matricule'] && (
-                              <span className="error-message">{validationErrors['self_matricule']}</span>
-                            )}
-                          </div>
-                          <div className="form-group">
-                            <label className="form-label">Email *</label>
-                            <input
-                              type="email"
-                              className={`form-input ${validationErrors['self_email'] ? 'form-input-error' : ''}`}
-                              value={selfInfo.email}
-                              onChange={(e) => {
-                                setSelfInfo({ ...selfInfo, email: e.target.value })
-                                if (e.target.value) {
-                                  const error = validateEmail(e.target.value)
-                                  setValidationErrors(prev => ({
-                                    ...prev,
-                                    self_email: error
-                                  }))
-                                } else {
-                                  setValidationErrors(prev => {
-                                    const newErrors = { ...prev }
-                                    delete newErrors.self_email
-                                    return newErrors
-                                  })
-                                }
-                              }}
-                            />
-                            {validationErrors['self_email'] && (
-                              <span className="error-message">{validationErrors['self_email']}</span>
-                            )}
-                          </div>
-                          <div className="form-group">
-                            <label className="form-label">Téléphone</label>
-                            <input
-                              type="tel"
-                              className={`form-input ${validationErrors['self_telephone'] ? 'form-input-error' : ''}`}
-                              value={selfInfo.telephone}
-                              onChange={(e) => {
-                                setSelfInfo({ ...selfInfo, telephone: e.target.value })
-                                if (e.target.value) {
-                                  const error = validateTelephone(e.target.value)
-                                  setValidationErrors(prev => ({
-                                    ...prev,
-                                    self_telephone: error
-                                  }))
-                                } else {
-                                  setValidationErrors(prev => {
-                                    const newErrors = { ...prev }
-                                    delete newErrors.self_telephone
-                                    return newErrors
-                                  })
-                                }
-                              }}
-                            />
-                            {validationErrors['self_telephone'] && (
-                              <span className="error-message">{validationErrors['self_telephone']}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {addSpouses && (
-                    <div className="info-card">
-                      <div className="info-card-header">
-                        <h5 className="info-card-title">Conjoints</h5>
-                        {spouses.length < 2 && (
-                          <button
-                            type="button"
-                            className="btn-add-item"
-                            onClick={() => {
-                              if (spouses.length < 2) {
-                                setSpouses([...spouses, { nom: "", prenom: "", cne: "" }])
-                              }
-                            }}
-                          >
-                            <Plus size={16} />
-                            <span>Ajouter</span>
-                          </button>
-                        )}
-                      </div>
-                      <div className="info-card-body">
-                        {spouses.map((spouse, index) => (
-                          <div key={index} className="spouse-form">
-                            <div className="spouse-header">
-                              <h6 className="spouse-title">Conjoint {index + 1}</h6>
-                              {spouses.length > 1 && (
-                                <button
-                                  type="button"
-                                  className="btn-remove-item"
-                                  onClick={() => setSpouses(spouses.filter((_, i) => i !== index))}
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              )}
-                            </div>
-                            <div className="form-grid">
-                              <div className="form-group">
-                                <label className="form-label">Nom *</label>
-                                <input
-                                  type="text"
-                                  className="form-input"
-                                  value={spouse.nom}
-                                  onChange={(e) => {
-                                    const updated = [...spouses]
-                                    updated[index].nom = e.target.value
-                                    setSpouses(updated)
-                                  }}
-                                />
-                              </div>
-                              <div className="form-group">
-                                <label className="form-label">Prénom *</label>
-                                <input
-                                  type="text"
-                                  className="form-input"
-                                  value={spouse.prenom}
-                                  onChange={(e) => {
-                                    const updated = [...spouses]
-                                    updated[index].prenom = e.target.value
-                                    setSpouses(updated)
-                                  }}
-                                />
-                              </div>
-                              <div className="form-group">
-                                <label className="form-label">CNE</label>
-                                <input
-                                  type="text"
-                                  className="form-input"
-                                  value={spouse.cne}
-                                  onChange={(e) => {
-                                    const updated = [...spouses]
-                                    updated[index].cne = e.target.value
-                                    setSpouses(updated)
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {addChildren && (reserveForSelf ? userType === "collaborateur" : titulaireInfo.type === "collaborateur") && (
-                    <div className="info-card">
-                      <div className="info-card-header">
-                        <h5 className="info-card-title">Enfants (6-18 ans)</h5>
-                        {children.length < 5 && (
-                          <button
-                            type="button"
-                            className="btn-add-item"
-                            onClick={() => {
-                              if (children.length < 5) {
-                                setChildren([...children, { nom: "", prenom: "", dateNaissance: "", sexe: "M" }])
-                              }
-                            }}
-                          >
-                            <Plus size={16} />
-                            <span>Ajouter</span>
-                          </button>
-                        )}
-                      </div>
-                      <div className="info-card-body">
-                        {children.map((child, index) => (
-                          <div key={index} className="child-form">
-                            <div className="child-header">
-                              <h6 className="child-title">Enfant {index + 1}</h6>
-                              {children.length > 1 && (
-                                <button
-                                  type="button"
-                                  className="btn-remove-item"
-                                  onClick={() => setChildren(children.filter((_, i) => i !== index))}
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              )}
-                            </div>
-                            <div className="form-grid">
-                              <div className="form-group">
-                                <label className="form-label">Nom *</label>
-                                <input
-                                  type="text"
-                                  className="form-input"
-                                  value={child.nom}
-                                  onChange={(e) => {
-                                    const updated = [...children]
-                                    updated[index].nom = e.target.value
-                                    setChildren(updated)
-                                  }}
-                                />
-                              </div>
-                              <div className="form-group">
-                                <label className="form-label">Prénom *</label>
-                                <input
-                                  type="text"
-                                  className="form-input"
-                                  value={child.prenom}
-                                  onChange={(e) => {
-                                    const updated = [...children]
-                                    updated[index].prenom = e.target.value
-                                    setChildren(updated)
-                                  }}
-                                />
-                              </div>
-                              <div className="form-group">
-                                <label className="form-label">Date de naissance *</label>
-                                <input
-                                  type="date"
-                                  className="form-input"
-                                  value={child.dateNaissance}
-                                  onChange={(e) => {
-                                    const updated = [...children]
-                                    updated[index].dateNaissance = e.target.value
-                                    setChildren(updated)
-                                  }}
-                                />
-                              </div>
-                              <div className="form-group">
-                                <label className="form-label">Sexe *</label>
-                                <select
-                                  className="form-select"
-                                  value={child.sexe}
-                                  onChange={(e) => {
-                                    const updated = [...children]
-                                    updated[index].sexe = e.target.value
-                                    setChildren(updated)
-                                  }}
-                                >
-                                  <option value="M">Masculin</option>
-                                  <option value="F">Féminin</option>
-                                </select>
-                              </div>
-                            </div>
-                            {child.nom &&
-                              child.prenom &&
-                              child.dateNaissance &&
-                              !isAgeBetween6And18(child.dateNaissance) && (
-                                <div className="alert-warning">
-                                  <small>L'enfant doit avoir entre 6 et 18 ans pour la piscine</small>
-                                </div>
-                              )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {addChildren && (reserveForSelf ? userType === "retraite" : titulaireInfo.type === "retraite") && (
-                    <div className="alert-info">
-                      <strong>Information:</strong> Les retraités ne peuvent pas ajouter d'enfants à leurs réservations.
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Étape 3 - Récapitulatif */}
-              {step === 3 && (
-                <div className="step-container">
-                  <div className="step-header">
-                    <h4 className="step-title">Récapitulatif</h4>
-                    <p className="step-description">Vérifiez les informations avant de créer la réservation</p>
-                  </div>
-                  <div className="summary-card">
-                    <div className="summary-header">
-                      <h5 className="summary-title">Réservation Piscine</h5>
-                    </div>
-                    <div className="summary-body">
-                      <div className="summary-item">
-                        <User size={16} className="summary-icon" />
-                        <span className="summary-text">
-                          <strong>Titulaire:</strong> {reserveForSelf 
-                            ? `${selfInfo.prenom} ${selfInfo.nom} (${userType === "collaborateur" ? "Collaborateur" : "Retraité"})`
-                            : `${titulaireInfo.prenom} ${titulaireInfo.nom} (${titulaireInfo.type === "collaborateur" ? "Collaborateur" : "Retraité"})`
-                          }
-                        </span>
-                      </div>
-                      <div className="summary-item">
-                        <Calendar size={16} className="summary-icon" />
-                        <span className="summary-text">
-                          <strong>Date et heure:</strong> {new Date().toLocaleString('fr-FR')} (automatique)
-                        </span>
-                      </div>
-                      <div className="summary-item">
-                        <User size={16} className="summary-icon" />
-                        <span className="summary-text">
-                          <strong>Créée par:</strong> {currentUser.prenom} {currentUser.nom} (Admin)
-                        </span>
-                      </div>
-                      {reserveForSelf && selfInfo.nom && selfInfo.prenom && (
-                        <div className="summary-item">
-                          <User size={16} className="summary-icon" />
-                          <span className="summary-text">
-                            <strong>Participant:</strong> {selfInfo.prenom} {selfInfo.nom} ({userType === "retraite" ? "Retraité" : "Collaborateur"})
-                          </span>
-                        </div>
-                      )}
-                      {addSpouses &&
-                        spouses
-                          .filter((s) => s.nom.trim() && s.prenom.trim())
-                          .map((spouse, index) => (
-                            <div key={index} className="summary-item">
-                              <Heart size={16} className="summary-icon" />
-                              <span className="summary-text">
-                                <strong>Conjoint:</strong> {spouse.prenom} {spouse.nom}
-                              </span>
-                            </div>
-                          ))}
-                      {addChildren &&
-                        (reserveForSelf ? userType === "collaborateur" : titulaireInfo.type === "collaborateur") &&
-                        children
-                          .filter((c) => c.nom.trim() && c.prenom.trim() && isAgeBetween6And18(c.dateNaissance))
-                          .map((child, index) => (
-                            <div key={index} className="summary-item">
-                              <Baby size={16} className="summary-icon" />
-                              <span className="summary-text">
-                                <strong>Enfant:</strong> {child.prenom} {child.nom} (
-                                {new Date().getFullYear() - new Date(child.dateNaissance).getFullYear()} ans)
-                              </span>
-                            </div>
-                          ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="modal-footer">
-              {step > 0 && (
-                <button className="btn-modal btn-secondary" onClick={handlePreviousStep}>
-                  Précédent
-                </button>
-              )}
-              <button className="btn-modal btn-secondary" onClick={() => {
-                resetNewReservationForm()
-                setShowNewReservationModal(false)
-              }}>
-                Annuler
-              </button>
-              {step < 3 ? (
-                <button
-                  className="btn-modal btn-primary"
-                  onClick={handleNextStep}
-                >
-                  Suivant
-                </button>
-              ) : (
-                <button
-                  className="btn-modal btn-primary"
-                  onClick={handleSubmitNewReservation}
-                >
-                  Créer la réservation
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modals existants - Détails, Groupes, etc. */}
+      {/* Modals - Garder la même structure mais avec les nouveaux styles */}
       {showDetailsModal && selectedReservation && (
         <div className="modal-overlay">
           <div className="modal-container modal-large">
@@ -1726,7 +649,7 @@ export function ReservationsPiscine() {
             <div className="modal-body">
               <div className="details-grid">
                 <div className="details-section">
-                  <h4 className="section-title">Informations du Titulaire</h4>
+                  <h4 className="section-title">Informations Générales</h4>
                   <div className="info-grid">
                     <div className="info-item">
                       <span className="info-label">Nom complet</span>
@@ -1745,16 +668,24 @@ export function ReservationsPiscine() {
                       <span className="info-value">{selectedReservation.email}</span>
                     </div>
                     <div className="info-item">
+                      <span className="info-label">Groupe</span>
+                      <span className="info-value">{selectedReservation.groupe}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Bassin</span>
+                      <span className="info-value">{selectedReservation.bassin}</span>
+                    </div>
+                    <div className="info-item">
                       <span className="info-label">Date</span>
                       <span className="info-value">{selectedReservation.date}</span>
                     </div>
                     <div className="info-item">
                       <span className="info-label">Horaire</span>
                       <span className="info-value">
-                        {selectedReservation.heureDebut || selectedReservation.heureCreation} 
+                        {selectedReservation.heureDebut} - {selectedReservation.heureFin}
                       </span>
                     </div>
-                    <div className="info-item">
+                    <div className="info-item " >
                       <span className="info-label">Statut</span>
                       <span className="info-value">{getStatusBadge(selectedReservation.status)}</span>
                     </div>
@@ -1845,7 +776,7 @@ export function ReservationsPiscine() {
                   </div>
                   {selectedReservation.commentaire && (
                     <div className="comment-section">
-                      <h6 className="comment-title">Commentaire</h6>
+                      <h5 className="comment-title">Commentaire</h5>
                       <p className="comment-text">{selectedReservation.commentaire}</p>
                     </div>
                   )}
@@ -1855,6 +786,123 @@ export function ReservationsPiscine() {
             <div className="modal-footer">
               <button className="btn-modal btn-secondary" onClick={() => setShowDetailsModal(false)}>
                 Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Édition */}
+      {showEditModal && selectedReservation && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <div className="modal-title-wrapper">
+                <div className="modal-icon">
+                  <Edit size={24} />
+                </div>
+                <div>
+                  <h3 className="modal-title">Modifier la réservation</h3>
+                  <p className="modal-subtitle">{selectedReservation.user}</p>
+                </div>
+              </div>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label">Utilisateur</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={editForm.user}
+                    onChange={(e) => setEditForm({ ...editForm, user: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Groupe</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={editForm.groupe}
+                    onChange={(e) => setEditForm({ ...editForm, groupe: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Bassin</label>
+                  <select
+                    className="form-select"
+                    value={editForm.bassin}
+                    onChange={(e) => setEditForm({ ...editForm, bassin: e.target.value })}
+                  >
+                    <option value="Grand Bassin">Grand Bassin</option>
+                    <option value="Petit Bassin">Petit Bassin</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Date</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={editForm.date}
+                    onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Heure début</label>
+                  <input
+                    type="time"
+                    className="form-input"
+                    value={editForm.heureDebut}
+                    onChange={(e) => setEditForm({ ...editForm, heureDebut: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Heure fin</label>
+                  <input
+                    type="time"
+                    className="form-input"
+                    value={editForm.heureFin}
+                    onChange={(e) => setEditForm({ ...editForm, heureFin: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Nombre de participants</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={editForm.participants}
+                    onChange={(e) => setEditForm({ ...editForm, participants: Number.parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="form-group form-group-full">
+                  <label className="form-label">Commentaire</label>
+                  <textarea
+                    className="form-textarea"
+                    rows={3}
+                    value={editForm.commentaire}
+                    onChange={(e) => setEditForm({ ...editForm, commentaire: e.target.value })}
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-modal btn-secondary" onClick={() => setShowEditModal(false)}>
+                Annuler
+              </button>
+              <button className="btn-modal btn-primary" onClick={handleEditReservation}>
+                Sauvegarder
               </button>
             </div>
           </div>
@@ -2018,14 +1066,520 @@ export function ReservationsPiscine() {
                   )}
                 </div>
               )}
+              <div className="alert-warning">
+                <strong>Note:</strong> Les adultes (collaborateurs/retraités/conjoints) sont affectés aux groupes
+                adultes, tandis que les enfants sont affectés aux groupes enfants ou mixtes selon leur âge.
+              </div>
             </div>
             <div className="modal-footer">
               <button className="btn-modal btn-secondary" onClick={() => setShowGroupModal(false)}>
                 Annuler
               </button>
               <button className="btn-modal btn-primary" onClick={handleGroupAssignment}>
-                Sauvegarder
+                Sauvegarder les affectations
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Nouvelle Réservation */}
+      {showNewReservationModal && (
+        <div className="modal-overlay">
+          <div className="modal-container modal-large">
+            <div className="modal-header">
+              <div className="modal-title-wrapper">
+                <div className="modal-icon">
+                  <Plus size={24} />
+                </div>
+                <div>
+                  <h3 className="modal-title">Nouvelle Réservation Piscine</h3>
+                  <p className="modal-subtitle">Étape {step + 1} sur 3</p>
+                </div>
+              </div>
+              <button className="modal-close" onClick={() => setShowNewReservationModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="modal-body">
+              {/* Étape 1 - Sélection des participants */}
+              {step === 0 && (
+                <div className="step-container">
+                  <div className="step-header">
+                    <h4 className="step-title">Sélection des participants</h4>
+                    <p className="step-description">Qui souhaitez-vous inclure dans cette réservation ?</p>
+                  </div>
+                  <div className="user-type-selection">
+                    <h5 className="selection-title">Type de compte:</h5>
+                    <div className="radio-group">
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="userType"
+                          value="collaborateur"
+                          checked={userType === "collaborateur"}
+                          onChange={(e) => setUserType(e.target.value as "collaborateur" | "retraite")}
+                        />
+                        <span className="radio-label">Collaborateur</span>
+                      </label>
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="userType"
+                          value="retraite"
+                          checked={userType === "retraite"}
+                          onChange={(e) => setUserType(e.target.value as "collaborateur" | "retraite")}
+                        />
+                        <span className="radio-label">Retraité</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div className="participants-selection-grid">
+                    <div className={`selection-card ${reserveForSelf ? "selected" : ""}`}>
+                      <label className="selection-card-label">
+                        <input
+                          type="checkbox"
+                          checked={reserveForSelf}
+                          onChange={(e) => setReserveForSelf(e.target.checked)}
+                          className="selection-checkbox"
+                        />
+                        <div className="selection-card-content">
+                          <User size={24} className="selection-icon" />
+                          <h6 className="selection-title">Moi-même</h6>
+                          <p className="selection-description">Inclure ma participation</p>
+                        </div>
+                      </label>
+                    </div>
+                    <div className={`selection-card ${addSpouses ? "selected" : ""}`}>
+                      <label className="selection-card-label">
+                        <input
+                          type="checkbox"
+                          checked={addSpouses}
+                          onChange={(e) => setAddSpouses(e.target.checked)}
+                          className="selection-checkbox"
+                        />
+                        <div className="selection-card-content">
+                          <Heart size={24} className="selection-icon" />
+                          <h6 className="selection-title">Conjoints</h6>
+                          <p className="selection-description">Maximum 2 conjoints</p>
+                        </div>
+                      </label>
+                    </div>
+                    {userType === "collaborateur" && (
+                      <div className={`selection-card ${addChildren ? "selected" : ""}`}>
+                        <label className="selection-card-label">
+                          <input
+                            type="checkbox"
+                            checked={addChildren}
+                            onChange={(e) => setAddChildren(e.target.checked)}
+                            className="selection-checkbox"
+                          />
+                          <div className="selection-card-content">
+                            <Baby size={24} className="selection-icon" />
+                            <h6 className="selection-title">Enfants 6-18 ans</h6>
+                            <p className="selection-description">Maximum 5 enfants</p>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                  {userType === "retraite" && (
+                    <div className="alert-info">
+                      <strong>Information:</strong> En tant que retraité, vous pouvez réserver pour vous-même et vos
+                      conjoints uniquement.
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Étape 2 - Informations des participants */}
+              {step === 1 && (
+                <div className="step-container">
+                  <div className="step-header">
+                    <h4 className="step-title">Informations des participants</h4>
+                    <p className="step-description">Veuillez remplir les informations requises</p>
+                  </div>
+                  {reserveForSelf && (
+                    <div className="info-card">
+                      <div className="info-card-header">
+                        <h5 className="info-card-title">Mes informations</h5>
+                      </div>
+                      <div className="info-card-body">
+                        <div className="form-grid">
+                          <div className="form-group">
+                            <label className="form-label">Nom *</label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              value={selfInfo.nom}
+                              onChange={(e) => setSelfInfo({ ...selfInfo, nom: e.target.value })}
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Prénom *</label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              value={selfInfo.prenom}
+                              onChange={(e) => setSelfInfo({ ...selfInfo, prenom: e.target.value })}
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">CNE *</label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              value={selfInfo.cne}
+                              onChange={(e) => setSelfInfo({ ...selfInfo, cne: e.target.value })}
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">
+                              {userType === "retraite" ? "Numéro RCAR *" : "Matricule *"}
+                            </label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              value={selfInfo.matricule}
+                              onChange={(e) => setSelfInfo({ ...selfInfo, matricule: e.target.value })}
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Email *</label>
+                            <input
+                              type="email"
+                              className="form-input"
+                              value={selfInfo.email}
+                              onChange={(e) => setSelfInfo({ ...selfInfo, email: e.target.value })}
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Téléphone</label>
+                            <input
+                              type="tel"
+                              className="form-input"
+                              value={selfInfo.telephone}
+                              onChange={(e) => setSelfInfo({ ...selfInfo, telephone: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {addSpouses && (
+                    <div className="info-card">
+                      <div className="info-card-header">
+                        <h5 className="info-card-title">Conjoints</h5>
+                        {spouses.length < 2 && (
+                          <button
+                            type="button"
+                            className="btn-add-item"
+                            onClick={() => {
+                              if (spouses.length < 2) {
+                                setSpouses([...spouses, { nom: "", prenom: "", cne: "" }])
+                              }
+                            }}
+                          >
+                            <Plus size={16} />
+                            <span>Ajouter</span>
+                          </button>
+                        )}
+                      </div>
+                      <div className="info-card-body">
+                        {spouses.map((spouse, index) => (
+                          <div key={index} className="spouse-form">
+                            <div className="spouse-header">
+                              <h6 className="spouse-title">Conjoint {index + 1}</h6>
+                              {spouses.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="btn-remove-item"
+                                  onClick={() => setSpouses(spouses.filter((_, i) => i !== index))}
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                            </div>
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label className="form-label">Nom *</label>
+                                <input
+                                  type="text"
+                                  className="form-input"
+                                  value={spouse.nom}
+                                  onChange={(e) => {
+                                    const updated = [...spouses]
+                                    updated[index].nom = e.target.value
+                                    setSpouses(updated)
+                                  }}
+                                />
+                              </div>
+                              <div className="form-group">
+                                <label className="form-label">Prénom *</label>
+                                <input
+                                  type="text"
+                                  className="form-input"
+                                  value={spouse.prenom}
+                                  onChange={(e) => {
+                                    const updated = [...spouses]
+                                    updated[index].prenom = e.target.value
+                                    setSpouses(updated)
+                                  }}
+                                />
+                              </div>
+                              <div className="form-group">
+                                <label className="form-label">CNE *</label>
+                                <input
+                                  type="text"
+                                  className="form-input"
+                                  value={spouse.cne}
+                                  onChange={(e) => {
+                                    const updated = [...spouses]
+                                    updated[index].cne = e.target.value
+                                    setSpouses(updated)
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {addChildren && userType === "collaborateur" && (
+                    <div className="info-card">
+                      <div className="info-card-header">
+                        <h5 className="info-card-title">Enfants (6-18 ans)</h5>
+                        {children.length < 5 && (
+                          <button
+                            type="button"
+                            className="btn-add-item"
+                            onClick={() => {
+                              if (children.length < 5) {
+                                setChildren([...children, { nom: "", prenom: "", dateNaissance: "", sexe: "M" }])
+                              }
+                            }}
+                          >
+                            <Plus size={16} />
+                            <span>Ajouter</span>
+                          </button>
+                        )}
+                      </div>
+                      <div className="info-card-body">
+                        {children.map((child, index) => (
+                          <div key={index} className="child-form">
+                            <div className="child-header">
+                              <h6 className="child-title">Enfant {index + 1}</h6>
+                              {children.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="btn-remove-item"
+                                  onClick={() => setChildren(children.filter((_, i) => i !== index))}
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                            </div>
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label className="form-label">Nom *</label>
+                                <input
+                                  type="text"
+                                  className="form-input"
+                                  value={child.nom}
+                                  onChange={(e) => {
+                                    const updated = [...children]
+                                    updated[index].nom = e.target.value
+                                    setChildren(updated)
+                                  }}
+                                />
+                              </div>
+                              <div className="form-group">
+                                <label className="form-label">Prénom *</label>
+                                <input
+                                  type="text"
+                                  className="form-input"
+                                  value={child.prenom}
+                                  onChange={(e) => {
+                                    const updated = [...children]
+                                    updated[index].prenom = e.target.value
+                                    setChildren(updated)
+                                  }}
+                                />
+                              </div>
+                              <div className="form-group">
+                                <label className="form-label">Date de naissance *</label>
+                                <input
+                                  type="date"
+                                  className="form-input"
+                                  value={child.dateNaissance}
+                                  onChange={(e) => {
+                                    const updated = [...children]
+                                    updated[index].dateNaissance = e.target.value
+                                    setChildren(updated)
+                                  }}
+                                />
+                              </div>
+                              <div className="form-group">
+                                <label className="form-label">Sexe *</label>
+                                <select
+                                  className="form-select"
+                                  value={child.sexe}
+                                  onChange={(e) => {
+                                    const updated = [...children]
+                                    updated[index].sexe = e.target.value
+                                    setChildren(updated)
+                                  }}
+                                >
+                                  <option value="M">Masculin</option>
+                                  <option value="F">Féminin</option>
+                                </select>
+                              </div>
+                            </div>
+                            {child.nom &&
+                              child.prenom &&
+                              child.dateNaissance &&
+                              !isAgeBetween6And18(child.dateNaissance) && (
+                                <div className="alert-warning">
+                                  <small>L'enfant doit avoir entre 6 et 18 ans pour la piscine</small>
+                                </div>
+                              )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Étape 3 - Récapitulatif */}
+              {step === 2 && (
+                <div className="step-container">
+                  <div className="step-header">
+                    <h4 className="step-title">Récapitulatif</h4>
+                    <p className="step-description">Vérifiez les informations avant de soumettre</p>
+                  </div>
+                  <div className="summary-card">
+                    <div className="summary-header">
+                      <h5 className="summary-title">Réservation Piscine</h5>
+                    </div>
+                    <div className="summary-body">
+                      {reserveForSelf && (
+                        <div className="summary-item">
+                          <User size={16} className="summary-icon" />
+                          <span className="summary-text">
+                            <strong>{userType === "retraite" ? "Retraité" : "Collaborateur"}:</strong> {selfInfo.prenom}{" "}
+                            {selfInfo.nom} (CNE: {selfInfo.cne})
+                          </span>
+                        </div>
+                      )}
+                      {addSpouses &&
+                        spouses
+                          .filter((s) => s.nom.trim() && s.prenom.trim())
+                          .map((spouse, index) => (
+                            <div key={index} className="summary-item">
+                              <Heart size={16} className="summary-icon" />
+                              <span className="summary-text">
+                                <strong>Conjoint:</strong> {spouse.prenom} {spouse.nom} (CNE: {spouse.cne})
+                              </span>
+                            </div>
+                          ))}
+                      {addChildren &&
+                        userType === "collaborateur" &&
+                        children
+                          .filter((c) => c.nom.trim() && c.prenom.trim())
+                          .map((child, index) => (
+                            <div key={index} className="summary-item">
+                              <Baby size={16} className="summary-icon" />
+                              <span className="summary-text">
+                                <strong>Enfant:</strong> {child.prenom} {child.nom} (
+                                {child.sexe === "M" ? "Garçon" : "Fille"}, {child.dateNaissance})
+                              </span>
+                            </div>
+                          ))}
+                    </div>
+                  </div>
+                  <div className="alert-info">
+                    Cette demande sera soumise à validation administrative. L'affectation aux groupes sera effectuée
+                    selon le type de participant : adultes dans les groupes adultes, enfants dans les groupes enfants.
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              {step > 0 && (
+                <button className="btn-modal btn-secondary" onClick={() => setStep(step - 1)}>
+                  Précédent
+                </button>
+              )}
+              {step < 2 ? (
+                <button
+                  className="btn-modal btn-primary"
+                  onClick={() => setStep(step + 1)}
+                  disabled={
+                    step === 0
+                      ? !(reserveForSelf || addSpouses || addChildren)
+                      : step === 1
+                        ? !selfInfo.nom || !selfInfo.prenom || !selfInfo.cne || !selfInfo.matricule || !selfInfo.email
+                        : false
+                  }
+                >
+                  Continuer
+                </button>
+              ) : (
+                <button
+                  className="btn-modal btn-primary"
+                  onClick={() => {
+                    const participants = []
+                    if (reserveForSelf) {
+                      participants.push({
+                        nom: selfInfo.nom,
+                        prenom: selfInfo.prenom,
+                        type: userType === "retraite" ? "Retraité" : "Collaborateur",
+                      })
+                    }
+                    if (addSpouses) {
+                      spouses.forEach((s) => {
+                        if (s.nom && s.prenom) {
+                          participants.push({
+                            nom: s.nom,
+                            prenom: s.prenom,
+                            type: "Conjoint",
+                          })
+                        }
+                      })
+                    }
+                    if (addChildren && userType === "collaborateur") {
+                      children.forEach((c) => {
+                        if (c.nom && c.prenom) {
+                          participants.push({
+                            nom: c.nom,
+                            prenom: c.prenom,
+                            type: "Enfant",
+                          })
+                        }
+                      })
+                    }
+                    console.log("Nouvelle réservation:", {
+                      user: `${selfInfo.prenom} ${selfInfo.nom}`,
+                      userType: userType === "retraite" ? "Retraité" : "Collaborateur",
+                      matricule: selfInfo.matricule,
+                      participants: participants.length,
+                      participantsList: participants,
+                    })
+                    alert("Réservation créée avec succès")
+                    setShowNewReservationModal(false)
+                    // Reset form
+                    setStep(0)
+                    setReserveForSelf(false)
+                    setAddSpouses(false)
+                    setAddChildren(false)
+                    setSelfInfo({ nom: "", prenom: "", cne: "", matricule: "", email: "", telephone: "" })
+                    setSpouses([{ nom: "", prenom: "", cne: "" }])
+                    setChildren([{ nom: "", prenom: "", dateNaissance: "", sexe: "M" }])
+                  }}
+                >
+                  Soumettre
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -2034,9 +1588,8 @@ export function ReservationsPiscine() {
       <style jsx>{`
         .reservations-piscine-container {
           padding: 24px;
-          background: #f8fafc;
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
           min-height: 100vh;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         /* Header */
@@ -2045,7 +1598,7 @@ export function ReservationsPiscine() {
           border-radius: 16px;
           padding: 24px;
           margin-bottom: 24px;
-          box-shadow: 0 4px 16px rgba(22, 163, 74, 0.1);
+          box-shadow: 0 4px 20px rgba(22, 163, 74, 0.08);
           border: 1px solid #bbf7d0;
         }
 
@@ -2070,12 +1623,13 @@ export function ReservationsPiscine() {
           align-items: center;
           justify-content: center;
           color: white;
+          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
         }
 
         .page-title {
-          font-size: 28px;
+          font-size: 24px;
           font-weight: 700;
-          color: #1f2937;
+          color: #16a34a;
           margin: 0 0 4px 0;
         }
 
@@ -2094,7 +1648,7 @@ export function ReservationsPiscine() {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 12px 20px;
+          padding: 10px 20px;
           border-radius: 10px;
           font-weight: 600;
           font-size: 14px;
@@ -2187,7 +1741,6 @@ export function ReservationsPiscine() {
           border-radius: 4px;
         }
 
-      
         /* Filters */
         .filters-container {
           background: white;
@@ -3409,4 +2962,3 @@ export function ReservationsPiscine() {
     </div>
   )
 }
-

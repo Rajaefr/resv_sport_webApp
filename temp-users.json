@@ -310,5 +310,20 @@
     "id": "admin_1756847000000",
     "createdAt": "2025-09-02T21:00:00.000Z",
     "updatedAt": "2025-09-02T21:00:00.000Z"
+  },
+  {
+    "firstName": "rajaa",
+    "lastName": "ali",
+    "email": "rali@gmail.com",
+    "username": "rajaa.ali",
+    "password": "123456789",
+    "department": "IT",
+    "matricule": "12345",
+    "telephone": "+212687953410",
+    "employeeId": "",
+    "role": "consulteur",
+    "id": "user_1757989705281",
+    "createdAt": "2025-09-16T02:28:25.281Z",
+    "updatedAt": "2025-09-16T02:28:25.281Z"
   }
 ]
