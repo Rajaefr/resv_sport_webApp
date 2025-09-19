@@ -22,13 +22,13 @@ import "../styles/parametres.css"
 // Données utilisateur actuelles (simulées)
 const currentUser = {
   id: "U001",
-  nom: "Ahmed Benali",
-  prenom: "Ahmed",
+  nom: "ocp",
+  prenom: "admin",
   matricule: "12345A",
-  email: "ahmed.benali@ocp.ma",
+  email: "aadmin@ocp.ma",
   telephone: "+212 6 12 34 56 78",
   dateInscription: "2023-01-15",
-  role: "gestionnaire",
+  role: "admin",
   derniereConnexion: "2024-01-14",
   adresse: "123 Rue Mohammed V, Casablanca",
   poste: "Gestionnaire Principal",

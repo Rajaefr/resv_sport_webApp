@@ -6,7 +6,7 @@ import {
   Download,
   Plus,
   Eye,
-  Edit,
+  
   Trash2,
   CheckCircle,
   XCircle,
@@ -191,7 +191,7 @@ export function ReservationsPiscine() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const [selectedReservation, setSelectedReservation] = useState<any>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
+ 
   const [showGroupModal, setShowGroupModal] = useState(false)
   const [showNewReservationModal, setShowNewReservationModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -213,17 +213,6 @@ export function ReservationsPiscine() {
   })
   const [spouses, setSpouses] = useState([{ nom: "", prenom: "", cne: "" }])
   const [children, setChildren] = useState([{ nom: "", prenom: "", dateNaissance: "", sexe: "M" }])
-  const [editForm, setEditForm] = useState({
-    user: "",
-    email: "",
-    groupe: "",
-    bassin: "",
-    date: "",
-    heureDebut: "",
-    heureFin: "",
-    participants: 0,
-    commentaire: "",
-  })
 
   // État pour la gestion des groupes par participant
   const [participantGroups, setParticipantGroups] = useState<{ [key: string]: string }>({})
@@ -258,30 +247,8 @@ export function ReservationsPiscine() {
     }
   }
 
-  const openEditModal = (reservation: any) => {
-    setSelectedReservation(reservation)
-    setEditForm({
-      user: reservation.user,
-      email: reservation.email,
-      groupe: reservation.groupe,
-      bassin: reservation.bassin,
-      date: reservation.date,
-      heureDebut: reservation.heureDebut,
-      heureFin: reservation.heureFin,
-      participants: reservation.participants,
-      commentaire: reservation.commentaire,
-    })
-    setShowEditModal(true)
-  }
-
-  const handleEditReservation = () => {
-    if (selectedReservation) {
-      console.log("Modification réservation:", editForm)
-      alert(`Réservation ${editForm.user} modifiée avec succès`)
-      setShowEditModal(false)
-    }
-  }
-
+ 
+ 
   const openGroupModal = (reservation: any) => {
     setSelectedReservation(reservation)
     const currentGroups: { [key: string]: string } = {}
@@ -357,10 +324,10 @@ export function ReservationsPiscine() {
             <Waves size={20} />
           </div>
           <div className="stat-content">
-            <div className="stat-value">15</div>
+            <div className="stat-value">1</div>
             <div className="stat-label">Aujourd'hui</div>
           </div>
-          <div className="stat-trend">+12%</div>
+          <div className="stat-trend">+2%</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon">
@@ -550,13 +517,7 @@ export function ReservationsPiscine() {
                       >
                         <Eye size={16} />
                       </button>
-                      <button
-                        className="action-btn action-edit"
-                        onClick={() => openEditModal(reservation)}
-                        title="Éditer"
-                      >
-                        <Edit size={16} />
-                      </button>
+                     
                       <button
                         className="action-btn action-group"
                         onClick={() => openGroupModal(reservation)}
@@ -792,122 +753,7 @@ export function ReservationsPiscine() {
         </div>
       )}
 
-      {/* Modal Édition */}
-      {showEditModal && selectedReservation && (
-        <div className="modal-overlay">
-          <div className="modal-container">
-            <div className="modal-header">
-              <div className="modal-title-wrapper">
-                <div className="modal-icon">
-                  <Edit size={24} />
-                </div>
-                <div>
-                  <h3 className="modal-title">Modifier la réservation</h3>
-                  <p className="modal-subtitle">{selectedReservation.user}</p>
-                </div>
-              </div>
-              <button className="modal-close" onClick={() => setShowEditModal(false)}>
-                <X size={24} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="form-grid">
-                <div className="form-group">
-                  <label className="form-label">Utilisateur</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.user}
-                    onChange={(e) => setEditForm({ ...editForm, user: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Email</label>
-                  <input
-                    type="email"
-                    className="form-input"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Groupe</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={editForm.groupe}
-                    onChange={(e) => setEditForm({ ...editForm, groupe: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Bassin</label>
-                  <select
-                    className="form-select"
-                    value={editForm.bassin}
-                    onChange={(e) => setEditForm({ ...editForm, bassin: e.target.value })}
-                  >
-                    <option value="Grand Bassin">Grand Bassin</option>
-                    <option value="Petit Bassin">Petit Bassin</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Date</label>
-                  <input
-                    type="date"
-                    className="form-input"
-                    value={editForm.date}
-                    onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Heure début</label>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={editForm.heureDebut}
-                    onChange={(e) => setEditForm({ ...editForm, heureDebut: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Heure fin</label>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={editForm.heureFin}
-                    onChange={(e) => setEditForm({ ...editForm, heureFin: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Nombre de participants</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={editForm.participants}
-                    onChange={(e) => setEditForm({ ...editForm, participants: Number.parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div className="form-group form-group-full">
-                  <label className="form-label">Commentaire</label>
-                  <textarea
-                    className="form-textarea"
-                    rows={3}
-                    value={editForm.commentaire}
-                    onChange={(e) => setEditForm({ ...editForm, commentaire: e.target.value })}
-                  ></textarea>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-modal btn-secondary" onClick={() => setShowEditModal(false)}>
-                Annuler
-              </button>
-              <button className="btn-modal btn-primary" onClick={handleEditReservation}>
-                Sauvegarder
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+     
 
       {/* Modal Gestion des Groupes */}
       {showGroupModal && selectedReservation && (
@@ -2156,16 +2002,8 @@ export function ReservationsPiscine() {
           transform: scale(1.1);
         }
 
-        .action-edit {
-          background: #fef3c7;
-          color: #d97706;
-        }
-
-        .action-edit:hover {
-          background: #d97706;
-          color: white;
-          transform: scale(1.1);
-        }
+        
+       
 
         .action-group {
           background: #f0fdf4;

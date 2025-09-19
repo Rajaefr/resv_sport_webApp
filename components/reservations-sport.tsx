@@ -1615,9 +1615,7 @@ try {
                             {!selfInfo.disciplineCode && (
                               <div className="form-error">Veuillez sélectionner une discipline</div>
                             )}
-                            {!selfInfo.disciplineCode && (
-                              <div className="form-error">Veuillez sélectionner une discipline</div>
-                            )}
+                            
                           </div>
                         </div>
                       </div>
