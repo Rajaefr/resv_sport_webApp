@@ -1,13 +1,13 @@
-# 🏢 OCP Admin - Application Web de Gestion
+# OCP Admin - Application Web de Gestion
 
 Application web d'administration pour le système de réservations sportives OCP (Office Chérifien des Phosphates).
 
-## 📱 Applications Liées
+## Applications Liées
 
 - **Application Mobile** : [OCP Réservations Mobile](https://github.com/Rajaefr/reserv_sportive_app-mobile)
-- **Backend API** : Intégré dans ce projet (`backend-unified/`)
 
-## 🚀 Technologies Utilisées
+
+## Technologies Utilisées
 
 ### Frontend
 - **Next.js 15.5.3** - Framework React avec SSR/SSG
@@ -26,7 +26,7 @@ Application web d'administration pour le système de réservations sportives OCP
 - **XLSX** - Import/export Excel
 - **React Hook Form + Zod** - Validation des formulaires
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ocp-admin/
@@ -44,40 +44,40 @@ ocp-admin/
 └── public/             # Assets statiques
 ```
 
-## 🔐 Système de Rôles
+## Système de Rôles
 
 - **ADMIN** - Accès complet au système
 - **GESTIONNAIRE** - Gestion des réservations et groupes
 - **CONSULTEUR** - Consultation uniquement
 - **USER** - Utilisateur standard
 
-## 🎯 Fonctionnalités Principales
+## Fonctionnalités Principales
 
-### 📊 Dashboard
+### Dashboard
 - Statistiques en temps réel
 - Graphiques de performance
 - Alertes système
 - Réservations récentes
 
-### 🏊‍♂️ Gestion Réservations
+### Gestion Réservations
 - **Piscine** : Groupes, horaires, participants
 - **Sport** : Disciplines, équipements, tarifs
 - Approbation/Refus des demandes
 - Gestion des paiements
 
-### 👥 Administration
+### Administration
 - Gestion des utilisateurs et rôles
 - Codes disciplines sportives
 - Groupes piscine (horaires, capacités)
 - Paramètres système
 
-### 📈 Rapports
+### Rapports
 - Export PDF/Excel
 - Statistiques détaillées
 - Historique des réservations
 - Rapports financiers
 
-## 🛠️ Installation
+## 🛠Installation
 
 ### Prérequis
 - Node.js 18+
@@ -151,7 +151,7 @@ npm run seed        # Données de test
 npm run studio      # Interface Prisma Studio
 ```
 
-## 🌐 Accès Application
+## Accès Application
 
 - **URL Développement** : http://localhost:3000
 - **API Backend** : http://localhost:8000/api
@@ -161,7 +161,7 @@ npm run studio      # Interface Prisma Studio
 - **Gestionnaire** : gestionnaire@ocp.ma / gest123
 - **Consulteur** : consulteur@ocp.ma / cons123
 
-## 📱 Intégration Mobile
+## Intégration Mobile
 
 Cette application web fonctionne en tandem avec l'[application mobile OCP](https://github.com/Rajaefr/reserv_sportive_app-mobile) :
 
@@ -170,7 +170,7 @@ Cette application web fonctionne en tandem avec l'[application mobile OCP](https
 - **Données temps réel** : Synchronisation automatique
 - **Rôles cohérents** : Système RBAC unifié
 
-## 🔒 Sécurité
+## Sécurité
 
 - **Authentification Firebase** multi-facteurs
 - **Validation stricte** des données (Zod + Joi)
@@ -179,14 +179,14 @@ Cette application web fonctionne en tandem avec l'[application mobile OCP](https
 - **Chiffrement bcrypt** des mots de passe
 - **Tokens JWT** sécurisés
 
-## 📊 Monitoring
+## Monitoring
 
 - **Logging Winston** avec niveaux
 - **Métriques de performance** intégrées
 - **Alertes système** automatiques
 - **Audit trail** des actions admin
 
-## 🤝 Contribution
+## Contribution
 
 1. Fork le projet
 2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
@@ -194,7 +194,7 @@ Cette application web fonctionne en tandem avec l'[application mobile OCP](https
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
 
-## 📞 Support
+## Support
 
 - **Email** : admin@ocp.ma
 - **Issues** : [GitHub Issues](https://github.com/Rajaefr/resv_sportt_webApp/issues)
@@ -206,4 +206,4 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ---
 
-**Développé avec ❤️ pour OCP - Office Chérifien des Phosphates**
+**Développé pour OCP - Office Chérifien des Phosphates**
